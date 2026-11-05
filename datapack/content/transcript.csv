@@ -1,0 +1,1 @@
+sentence_id,segment_id,speaker_id,start_t_sec,end_t_sec,start_clock,text,lang,slide_id,verification,source_count,is_sensitive,sensitive_reason,asr_confidence
