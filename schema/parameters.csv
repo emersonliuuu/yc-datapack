@@ -1,30 +1,32 @@
-name,value,unit,used_by,definition,status
-t0,opening_applause_onset,,all,T0（t_sec = 0）：開場第一段掌聲在主收音設備上的起點；所有裝置以這個聲音事件對時,fixed
-slide_change_diff_threshold,TBD,0–1,content/slide_changes.csv,投影畫面前後差異達到這個值才算換頁（detect_method 為 visual_diff 時）,to_test
-event_score_threshold,TBD,0–1,reactions/sound_events.csv,分析窗的類別分數達到這個值才算該類別,to_test
-event_merge_gap_sec,TBD,s,reactions/sound_events.csv,同類事件間隔小於這個秒數就合併,to_test
-event_min_sec,TBD,s,reactions/sound_events.csv,事件長度短於這個秒數不收錄,to_test
-silence_level_db,TBD,dBFS,reactions/sound_events.csv,全場安靜的音量上限,to_test
-silence_min_sec,TBD,s,reactions/sound_events.csv,全場安靜至少持續的秒數,to_test
-polite_window_sec,TBD,s,reactions/sound_events.csv,段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲,to_test
-analysis_fps,TBD,fps,reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv,Insta360 影片拿來偵測的每秒張數,to_decide
-person_conf_min,TBD,0–1,reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv,人的偵測信心達到這個值才算一個人,to_test
-phone_conf_min,TBD,0–1,reactions/phone_raise.csv,手機的偵測信心達到這個值才算有手機,to_test
-phone_up_min_sec,TBD,s,reactions/phone_raise.csv,手機高於肩膀持續達到這個秒數才算「舉手機」,to_test
-hand_raise_min_sec,TBD,s,reactions/hand_raise.csv;reactions/stage_polls.csv,手腕高於頭頂持續達到這個秒數才算「舉手」,to_test
-stand_min_sec,TBD,s,presence/presence_minute.csv,同一位置持續站立達到這個秒數才算「站著聽」；短於這個秒數視為起身走動,to_test
-raise_event_min_people,TBD,people,reactions/phone_raise.csv;reactions/hand_raise.csv,同一秒舉手機或舉手的人數達到這個值才算進入事件,to_test
-raise_event_min_sec,TBD,s,reactions/phone_raise.csv;reactions/hand_raise.csv,舉手機或舉手事件短於這個秒數不收錄,to_test
-raise_merge_gap_sec,TBD,s,reactions/phone_raise.csv;reactions/hand_raise.csv,舉手機或舉手事件間隔小於這個秒數就合併,to_test
-peak_merge_gap_sec,TBD,s,reactions/peaks.csv,高峰候選間隔小於這個秒數就合併成同一窗,to_test
-pre_peak_window_sec,3,s,reactions/peaks.csv,高峰前要看的秒數（Franck 定為三秒）,fixed
-w_applause,TBD,,reactions/peaks.csv,score 中掌聲秒數的權重,to_decide
-w_laughter,TBD,,reactions/peaks.csv,score 中笑聲秒數的權重,to_decide
-w_phone,TBD,,reactions/peaks.csv,score 中舉手機人數的權重,to_decide
-stage_poll_window_sec,TBD,s,reactions/stage_polls.csv,講者提出調查後計算回應的秒數,to_test
-fill_thresholds,0.5;0.8,ratio,presence/fill_order.csv,坐滿順序的兩個門檻（最大值的五成與八成）,fixed
-crowd_radius_m,TBD,m,after_talk/crowd_after_talk.csv,講者周圍幾公尺內算「圍住」,to_decide
-crowd_min_people,TBD,people,after_talk/crowd_after_talk.csv,圈內少於這個人數持續 30 秒就算結束,to_decide
-stop_min_sec,TBD,s,outside/passersby_10min.csv,在看板前停留至少這個秒數才算「停下」,to_decide
-bathroom_min_minutes,5,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最短分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed
-bathroom_max_minutes,15,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最長分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed
+name,value,unit,used_by,definition,status,owner_area
+t0,opening_applause_onset,,all,T0（t_sec = 0）：開場第一段掌聲在主收音設備上的起點；所有裝置以這個聲音事件對時,fixed,audio
+slide_change_diff_threshold,0.3,0–1,content/slide_changes.csv,投影畫面前後差異達到這個值才算換頁（detect_method 為 visual_diff 時）,to_test,video_x5
+event_score_threshold,0.5,0–1,reactions/sound_events.csv,分析窗的類別分數達到這個值才算該類別,to_test,audio
+event_merge_gap_sec,1,s,reactions/sound_events.csv,同類事件間隔小於這個秒數就合併,to_test,audio
+event_min_sec,1,s,reactions/sound_events.csv,事件長度短於這個秒數不收錄,to_test,audio
+silence_level_db,-50,dBFS,reactions/sound_events.csv,全場安靜的音量上限,to_test,audio
+silence_min_sec,3,s,reactions/sound_events.csv,全場安靜至少持續的秒數,to_test,audio
+polite_window_sec,10,s,reactions/sound_events.csv,段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲,to_test,audio
+analysis_fps,2,fps,reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv,Insta360 影片拿來偵測的每秒張數,fixed,video_x5
+person_conf_min,0.5,0–1,reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv,人的偵測信心達到這個值才算一個人,to_test,video_x5
+phone_conf_min,0.4,0–1,reactions/phone_raise.csv,手機的偵測信心達到這個值才算有手機,to_test,video_x5
+phone_up_min_sec,1,s,reactions/phone_raise.csv,手機高於肩膀持續達到這個秒數才算「舉手機」,to_test,video_x5
+hand_raise_min_sec,1,s,reactions/hand_raise.csv;reactions/stage_polls.csv,手腕高於頭頂持續達到這個秒數才算「舉手」,to_test,video_x5
+stand_min_sec,30,s,presence/presence_minute.csv,同一位置持續站立達到這個秒數才算「站著聽」；短於這個秒數視為起身走動,to_test,video_x5
+raise_event_min_people,3,people,reactions/phone_raise.csv;reactions/hand_raise.csv,同一秒舉手機或舉手的人數達到這個值才算進入事件,to_test,video_x5
+raise_event_min_sec,1,s,reactions/phone_raise.csv;reactions/hand_raise.csv,舉手機或舉手事件短於這個秒數不收錄,to_test,video_x5
+raise_merge_gap_sec,2,s,reactions/phone_raise.csv;reactions/hand_raise.csv,舉手機或舉手事件間隔小於這個秒數就合併,to_test,video_x5
+peak_merge_gap_sec,3,s,reactions/peaks.csv,高峰候選間隔小於這個秒數就合併成同一窗,to_test,video_x5
+pre_peak_window_sec,3,s,reactions/peaks.csv,高峰前要看的秒數（Franck 定為三秒）,fixed,video_x5
+w_applause,1,,reactions/peaks.csv,score 中掌聲秒數的權重,fixed,video_x5
+w_laughter,2,,reactions/peaks.csv,score 中笑聲秒數的權重,fixed,video_x5
+w_phone,1,,reactions/peaks.csv,score 中舉手機人數的權重,fixed,video_x5
+stage_poll_window_sec,8,s,reactions/stage_polls.csv,講者提出調查後計算回應的秒數,to_test,video_x5
+fill_thresholds,0.5;0.8,ratio,presence/fill_order.csv,坐滿順序的兩個門檻（最大值的五成與八成）,fixed,video_x5
+crowd_radius_m,1.5,m,after_talk/crowd_after_talk.csv,講者周圍幾公尺內算「圍住」,fixed,video_x5
+crowd_min_people,3,people,after_talk/crowd_after_talk.csv,圈內少於這個人數持續 30 秒就算結束,fixed,video_x5
+stop_min_sec,3,s,outside/passersby_10min.csv,在看板前停留至少這個秒數才算「停下」,fixed,video_x5
+bathroom_min_minutes,5,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最短分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed,integration
+bathroom_max_minutes,15,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最長分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed,integration
+csi_window_sec,10,s,presence/csi.csv,CSI 每個時間窗的長度,to_test,tbd
+csi_density_cutoffs,0.33;0.67,0–1,presence/csi.csv,density_level 分級：同一時間窗各區 motion_level 的分位數，低於第一個為 low、高於第二個為 high,to_test,tbd

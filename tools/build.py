@@ -40,22 +40,31 @@ REQUIRED_NOTES = {
 
 
 def read_csv(path):
-    with open(path, newline="", encoding="utf-8") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
+
+
+CSV_ENCODING = "utf-8-sig"  # UTF-8 含 BOM
+GENERATED_CSV = ("manifest.csv", "file_owners.csv")
 
 
 def load():
     files = read_csv(SCHEMA / "files.csv")
     fields = read_csv(SCHEMA / "fields.csv")
     params = read_csv(SCHEMA / "parameters.csv")
+    owners = read_csv(SCHEMA / "owners.csv")
     by_file = OrderedDict()
     for row in fields:
         by_file.setdefault(row["file"], []).append(row)
-    return files, by_file, params
+    return files, by_file, params, owners
 
 
-def check(files, by_file):
+def check(files, by_file, owners):
     errors = []
+    areas = {o["area"] for o in owners}
+    for f in files:
+        if f["owner_area"] not in areas:
+            errors.append(f"files.csv {f['path']} 的 owner_area 不在 schema/owners.csv：{f['owner_area']}")
     paths = {f["path"] for f in files}
     for path in by_file:
         if path not in paths:
@@ -93,11 +102,11 @@ def check(files, by_file):
 
 def write_headers(files, by_file):
     for f in files:
-        if f["format"] != "csv" or f["path"] == "manifest.csv":
+        if f["format"] != "csv" or f["path"] in GENERATED_CSV:
             continue
         out = PACK / f["path"]
         out.parent.mkdir(parents=True, exist_ok=True)
-        with open(out, "w", newline="", encoding="utf-8") as fh:
+        with open(out, "w", newline="", encoding=CSV_ENCODING) as fh:
             csv.writer(fh, lineterminator="\n").writerow(
                 [c["column"] for c in by_file[f["path"]]]
             )
@@ -116,10 +125,12 @@ def write_dirs(files):
 def write_manifest(files, by_file):
     cols = [c["column"] for c in by_file["manifest.csv"]]
     out = PACK / "manifest.csv"
-    with open(out, "w", newline="", encoding="utf-8") as fh:
+    with open(out, "w", newline="", encoding=CSV_ENCODING) as fh:
         w = csv.DictWriter(fh, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         for f in files:
+            if f["internal"] == "true":
+                continue
             w.writerow({
                 "path": f["path"],
                 "title_zh": f["title_zh"],
@@ -137,6 +148,26 @@ def write_manifest(files, by_file):
             })
 
 
+def write_owners(files, by_file, owners):
+    areas = {o["area"]: o for o in owners}
+    cols = [c["column"] for c in by_file["file_owners.csv"]]
+    with open(PACK / "file_owners.csv", "w", newline="", encoding=CSV_ENCODING) as fh:
+        w = csv.DictWriter(fh, fieldnames=cols, lineterminator="\n")
+        w.writeheader()
+        for f in files:
+            o = areas[f["owner_area"]]
+            w.writerow({
+                "path": f["path"],
+                "title_zh": f["title_zh"],
+                "version_added": f["version"],
+                "owner_area": f["owner_area"],
+                "owner_area_zh": o["area_zh"],
+                "owners": f["owners_override"] or o["owners"],
+                "source_devices": f["source_devices"],
+                "note": f["owner_note"],
+            })
+
+
 def md_escape(text):
     return text.replace("|", "\\|")
 
@@ -149,7 +180,7 @@ def write_reference(files, by_file, params):
     lines.append("")
     lines.append("## 共通規則")
     lines.append("")
-    lines.append("- **檔案格式**：CSV 一律 UTF-8（不含 BOM）、逗號分隔、換行為 LF、第一列為欄位名；含逗號、引號或換行的值用雙引號包起來（RFC 4180）。")
+    lines.append("- **檔案格式**：CSV 一律 UTF-8 含 BOM（Excel 直接開繁體中文不會亂碼）、逗號分隔、換行為 LF、第一列為欄位名；含逗號、引號或換行的值用雙引號包起來（RFC 4180）。")
     lines.append("- **命名**：檔名、資料夾名與欄位名一律英文小寫，以 `_` 連接。")
     lines.append("- **時間軸**：`t_sec` 是從 T0 起算的秒數，T0 是開場第一段掌聲在主收音設備上的起點，T0 以前為負數；所有裝置以同一個聲音事件對時。`*_clock` 是同一時刻的台北時間。")
     lines.append("- **區間**：`start_t_sec` 到 `end_t_sec` 是左閉右開區間 [start, end)。")
@@ -174,13 +205,14 @@ def write_reference(files, by_file, params):
     lines.append("")
     lines.append("| 檔案 | 中文名稱 | 版本 | 優先序 | 誰填 | 一列代表 | 主鍵 |")
     lines.append("| --- | --- | --- | --- | --- | --- | --- |")
-    for f in files:
+    public = [f for f in files if f["internal"] != "true"]
+    for f in public:
         lines.append(
             f"| `{f['path']}` | {f['title_zh']} | {f['version']} | {f['priority']} | {f['filled_by']} | {f['grain'] or '—'} | "
             f"{('`' + f['primary_key'] + '`') if f['primary_key'] else '—'} |"
         )
     lines.append("")
-    for f in files:
+    for f in public:
         if f["path"] not in by_file:
             continue
         lines.append(f"## `{f['path']}`：{f['title_zh']}")
@@ -206,7 +238,7 @@ def write_reference(files, by_file, params):
         lines.append("")
     lines.append("## 參數")
     lines.append("")
-    lines.append("狀態：`fixed` 已定；`to_test` 由測試定；`to_decide` 由負責人決定。定案後改 `schema/parameters.csv` 並寫進 CHANGELOG。")
+    lines.append("狀態：`fixed` 已定；`to_test` 目前是建議起始值，試錄後依結果調整；`to_decide` 還沒決定。值有改時改 `schema/parameters.csv` 並寫進 CHANGELOG。")
     lines.append("")
     lines.append("| 參數 | 值 | 單位 | 用在 | 定義 | 狀態 |")
     lines.append("| --- | --- | --- | --- | --- | --- |")
@@ -221,8 +253,8 @@ def write_reference(files, by_file, params):
 
 
 def main():
-    files, by_file, params = load()
-    errors = check(files, by_file)
+    files, by_file, params, owners = load()
+    errors = check(files, by_file, owners)
     if errors:
         print("schema 有錯誤：")
         for e in errors:
@@ -231,6 +263,7 @@ def main():
     write_headers(files, by_file)
     write_dirs(files)
     write_manifest(files, by_file)
+    write_owners(files, by_file, owners)
     write_reference(files, by_file, params)
     n_csv = sum(1 for f in files if f["format"] == "csv")
     n_cols = sum(len(v) for v in by_file.values())

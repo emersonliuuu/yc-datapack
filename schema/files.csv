@@ -1,45 +1,47 @@
-path,title_zh,version,priority,filled_by,format,grain,primary_key,source_devices,description
-00_README.md,資料包入口,v0.5,core,office,md,,,,這包是什麼、先讀哪幾個檔、讀數字前要知道的事、三條使用規則、這版改了什麼
-01_transcript_segmented.md,全場逐字稿（分段）,v1,core,pipeline,md,,,B;B2;B3;A1,給人或 AI 一次讀完的逐字稿：每段標時間、講者、簡報頁與現場事件；內容由 content/transcript.csv 產生
-CHANGELOG.md,版本紀錄,v0.5,core,office,md,,,,每一版新增、修改、移除了哪些檔案與欄位
-manifest.csv,資料包目錄,v0.5,core,office,csv,一個檔案或資料夾一列,path,,列出每個檔案是什麼、從哪來、怎麼產生、本版狀態
-content/agenda.csv,議程與講者名單,v0.5,core,office,csv,一個議程段落一列,segment_id,online;B,活動段落、講者與實際起訖時間；v0.5 只有公開的講者名單與開門時間，v1 補上現場實際時間
-content/transcript.csv,逐字稿,v1,core,pipeline_reviewed,csv,一句話一列,sentence_id,B;B2;B3;A1,每句話的講者、時間與定稿文字；含「不適合二創」標記
-content/slides_notes.csv,簡報頁標題與筆記,v1,core,office,csv,一個簡報頁一列,slide_id,A;X5,每一頁簡報的標題與我們寫的筆記；不放簡報畫面與全文
-content/slide_changes.csv,換頁時間,v1,core,pipeline,csv,一次換頁一列,change_seq,A;X5,每一次換頁的時間與停留秒數；同一頁再次出現另起一列
-content/segment_function.csv,每段在做什麼,v1,core,pipeline_reviewed,csv,一個功能段落一列,block_id,B,把連續且同一類別的句子合併為功能段落，標出在給方法、講故事、回答問題等哪一類
-content/taiwan_mentions.csv,講者提到台灣,v1,bonus,pipeline_reviewed,csv,一次提及一列,mention_id,B,逐字稿中提到台灣的地名、食物、公司與創業環境
-content/tool_mentions.csv,講者提到的工具與公司,v1,bonus,pipeline,csv,一次提及一列,mention_id,B,逐字稿中提到的工具、公司、產品與開源專案
-notes/,現場筆記,v1,core,field_staff,md,一場一份,,E,一場一份 Markdown，檔名 {segment_id}_{speaker_id}.md，格式見 notes/_template.md
-reactions/sound_events.csv,掌聲、笑聲、全場安靜,v1,core,pipeline,csv,一個聲音事件一列,event_id,B;C;X5,每一段掌聲、笑聲、台下討論聲或全場安靜的起訖時間與當下講到哪一句、哪一頁
-reactions/peaks.csv,反應高峰與高峰前三秒,v1,core,pipeline,csv,一個高峰一列,peak_id,B;C;X5,照固定規則算出的反應高峰排名與高峰前三秒講的話；不替人挑重點
-reactions/phone_raise.csv,舉手機,v1,core,pipeline_reviewed,csv,一次舉手機事件一列,raise_id,X5,同時舉手機（拍照、錄影）的人數達到門檻的時段，以及最多幾人、占可見人數多少
-reactions/hand_raise.csv,舉手,v1,core,pipeline_reviewed,csv,一次舉手事件一列,raise_id,X5,同時舉手的人數達到門檻的時段，以及最多幾人、占可見人數多少；舉著手機的不算
-reactions/stage_polls.csv,講者在台上做的現場調查,v1,core,pipeline_reviewed,csv,一次調查一列,poll_id,B;X5,講者請台下舉手或回應的時刻，以及當下舉手的人數
-reactions/timeline_minute.csv,每分鐘總表,v1,core,pipeline,csv,一分鐘一列,minute_idx,B;C;A;X5,每分鐘彙整講者、簡報、聲音、舉手機與在座人數，給 AI 一次讀完
-presence/presence_minute.csv,在座、離席與站著聽,v1.1,core,pipeline,csv,一台鏡頭一區一分鐘一列,minute_idx+camera+zone,X5,每區每分鐘的可見人數、坐著與站著的人數、離席與回座
-presence/fill_order.csv,各區坐滿順序,v1.1,reduced,pipeline,csv,一個區域群組一列,zone_group,X5,前、中、後三區分別在什麼時候坐到五成與八成
-after_talk/crowd_after_talk.csv,講完被圍住,v1.1,core,manual_annotation,csv,一位講者一列,segment_id+speaker_id,E,講者下台後被圍住多久、最多幾人、說到話與等了又走的人數；人工計數
-questions/onsite_qa.csv,台上 Q&A,v1,core,pipeline_reviewed,csv,一個問題一列,qa_id,B,現場台上被問到的問題與回答的起訖時間
-questions/pre_event.csv,活動前收到的問題,v1,core,office,csv,一個問題一列,pre_q_id,form,活動前從報名表收到的問題，以及當天有沒有被回答
-questions/unasked.csv,想問但沒問到的問題,v1.1,core,field_staff,csv,一個問題一列,unasked_id,form;E,報名表、QR 與採訪收到、但沒有在台上問出口的問題
-questions/remembered_moments.csv,你記得哪一刻,v2,core,office,csv,一則回覆一列,response_id,online,活動後一週問參加者記得哪一刻，對回現場高峰與句子
-startups/topics.csv,創業題目分布,v1.1,core,office,csv,一個題目一列,topic_id,form,報名表收到的創業題目與階段；去識別後才收錄
-speakers/profiles.csv,講者公開資料,v0.5,core,office,csv,一位講者一列,speaker_id,online,學經歷、現職、YC 關係與跟台灣的連結；只用本人或其公司公開的來源
-speakers/news.csv,講者近期新聞,v0.5,core,office,csv,一則新聞一列,news_id,online,活動前一兩天的講者相關新聞；只放連結、發布者、日期與一句摘要
-speakers/public_projects.md,講者公開專案,v0.5,core,office,md,,,online,講者本人公開的程式專案；放連結、commit hash 與抓取日期，不放全文
-speakers/new_vs_old.csv,過去講法與這場對照,v0.5,bonus,office,csv,一個觀點一列,claim_id,online;B,講者過去公開講過的觀點，活動後對逐字稿標出這場重複、更新或新增
-social/speakers_yc_posts.csv,講者與 YC 的公開貼文,v0.5,core,office,csv,一則貼文一列,post_id,online,講者與 YC 人員本人帳號在活動前後的公開貼文；只放連結、日期與一句摘要
-social/post_to_moment.csv,公開貼文對到現場時刻,v2,core,pipeline_reviewed,csv,一則對應一列,match_id,online,用貼文的照片與引用句推回是現場哪一刻；屬於推論
-online/posts.csv,活動後公開貼文,v2,core,office,csv,一則貼文一列,post_id,online,活動後的公開貼文與互動數；只放連結、日期與一句摘要
-online/search_lift.csv,提到後的搜尋量,v2,extension,office,csv,一個詞一列,mention_id,online,講者提到工具或公司後，Google Trends 台灣搜尋量的變化
-side_events/luma.csv,周邊活動報名人數,v2,bonus,office,csv,一個周邊活動一列,event_id,online,台北場周邊活動 Luma 公開頁上的人數；不收名單
-outside/entry_minute.csv,進場與出場人流,v1.1,bonus,pipeline,csv,一分鐘一列,minute_idx+camera,H;X5,每分鐘走進與走出會場的人數
-outside/passersby_10min.csv,看了看板卻沒進場,v1.1,bonus,pipeline_reviewed,csv,十分鐘一列,window_start_clock+camera,H;H2,場外看板前經過、停下、拍照的人數與同時段 QR 掃碼數
-rankings/trivia.csv,冷知識排行榜,v1.1,bonus,office,csv,一則冷知識一列,trivia_id,,由其他表照公開規則算出的冷知識；不碰任何個人
-scene/scene_description.md,場景描述,v1,core,field_staff,md,,,A;X5,用文字描述舞台、投影幕、燈光、座位配置與各時段的現場樣子，讓沒到場的人或 AI 能還原場景；不附照片
-derivatives/works.csv,二創回灌,v2,core,office,csv,一件作品一列,work_id,online,二創者回報的作品；和現場紀錄分開
-docs/field_reference.md,欄位說明,v0.5,core,pipeline,md,,,,每個 CSV 的每個欄位定義；由 schema/fields.csv 產生
-docs/devices_and_positions.md,設備與機位,v0.5,core,office,md,,,,設備代號、放哪、收什麼
-docs/limitations.md,量不到什麼,v0.5,core,office,md,,,,這包量不到、量不準與刻意不收的東西
-docs/venue_map.md,場地平面圖,v0.5,bonus,office,md,,,online;X5,場地配置的文字描述與分區代號；不附圖檔
+path,title_zh,version,priority,filled_by,format,grain,primary_key,source_devices,description,owner_area,owners_override,owner_note,internal
+00_README.md,資料包入口,v0.5,core,office,md,,,,這包是什麼、先讀哪幾個檔、讀數字前要知道的事、三條使用規則、這版改了什麼,integration,,,false
+01_transcript_segmented.md,全場逐字稿（分段）,v1,core,pipeline,md,,,B;B2;B3;A1,給人或 AI 一次讀完的逐字稿：每段標時間、講者、簡報頁與現場事件；內容由 content/transcript.csv 產生,audio,,,false
+CHANGELOG.md,版本紀錄,v0.5,core,office,md,,,,每一版新增、修改、移除了哪些檔案與欄位,integration,,,false
+manifest.csv,資料包目錄,v0.5,core,office,csv,一個檔案或資料夾一列,path,,列出每個檔案是什麼、從哪來、怎麼產生、本版狀態,integration,,,false
+file_owners.csv,檔案負責人對照表,v0.5,core,office,csv,一個檔案或資料夾一列,path,,內部用：每個檔案由哪個工作分類、哪幾位負責；由 schema/owners.csv 與 schema/files.csv 產生；發布前移除,integration,,內部用，發布前移除,true
+content/agenda.csv,議程與講者名單,v0.5,core,office,csv,一個議程段落一列,segment_id,online;B,活動段落、講者與實際起訖時間；v0.5 只有公開的講者名單與開門時間，v1 補上現場實際時間,integration,,,false
+content/transcript.csv,逐字稿,v1,core,pipeline_reviewed,csv,一句話一列,sentence_id,B;B2;B3;A1,每句話的講者、時間與定稿文字；含「不適合二創」標記,audio,,,false
+content/slides_notes.csv,簡報頁標題與筆記,v1,core,office,csv,一個簡報頁一列,slide_id,A;X5,每一頁簡報的標題與我們寫的筆記；不放簡報畫面與全文,video_x5,Jack,,false
+content/slide_changes.csv,換頁時間,v1,core,pipeline,csv,一次換頁一列,change_seq,A;X5,每一次換頁的時間與停留秒數；同一頁再次出現另起一列,video_x5,Jack,,false
+content/segment_function.csv,每段在做什麼,v1,core,pipeline_reviewed,csv,一個功能段落一列,block_id,B,把連續且同一類別的句子合併為功能段落，標出在給方法、講故事、回答問題等哪一類,audio,,,false
+content/taiwan_mentions.csv,講者提到台灣,v1,bonus,pipeline_reviewed,csv,一次提及一列,mention_id,B,逐字稿中提到台灣的地名、食物、公司與創業環境,audio,,,false
+content/tool_mentions.csv,講者提到的工具與公司,v1,bonus,pipeline,csv,一次提及一列,mention_id,B,逐字稿中提到的工具、公司、產品與開源專案,audio,,,false
+notes/,現場筆記,v1,core,field_staff,md,一場一份,,E,一場一份 Markdown，檔名 {segment_id}_{speaker_id}.md，格式見 notes/_template.md,video_x5,,,false
+reactions/sound_events.csv,掌聲、笑聲、全場安靜,v1,core,pipeline,csv,一個聲音事件一列,event_id,B;C;X5,每一段掌聲、笑聲、台下討論聲或全場安靜的起訖時間與當下講到哪一句、哪一頁,audio,,,false
+reactions/peaks.csv,反應高峰與高峰前三秒,v1,core,pipeline,csv,一個高峰一列,peak_id,B;C;X5,照固定規則算出的反應高峰排名與高峰前三秒講的話；不替人挑重點,video_x5,,聲音事件由 Ray 提供,false
+reactions/phone_raise.csv,舉手機,v1,core,pipeline_reviewed,csv,一次舉手機事件一列,raise_id,X5,同時舉手機（拍照、錄影）的人數達到門檻的時段，以及最多幾人、占可見人數多少,video_x5,,,false
+reactions/hand_raise.csv,舉手,v1,core,pipeline_reviewed,csv,一次舉手事件一列,raise_id,X5,同時舉手的人數達到門檻的時段，以及最多幾人、占可見人數多少；舉著手機的不算,video_x5,,,false
+reactions/stage_polls.csv,講者在台上做的現場調查,v1,core,pipeline_reviewed,csv,一次調查一列,poll_id,B;X5,講者請台下舉手或回應的時刻，以及當下舉手的人數,video_x5,,講者提問句由 Ray 提供,false
+reactions/timeline_minute.csv,每分鐘總表,v1,core,pipeline,csv,一分鐘一列,minute_idx,B;C;A;X5,每分鐘彙整講者、簡報、聲音、舉手機與在座人數，給 AI 一次讀完,video_x5,,聲音事件與逐字稿由 Ray 提供,false
+presence/presence_minute.csv,在座、離席與站著聽,v1.1,core,pipeline,csv,一台鏡頭一區一分鐘一列,minute_idx+camera+zone,X5,每區每分鐘的可見人數、坐著與站著的人數、離席與回座,video_x5,,,false
+presence/fill_order.csv,各區坐滿順序,v1.1,reduced,pipeline,csv,一個區域群組一列,zone_group,X5,前、中、後三區分別在什麼時候坐到五成與八成,video_x5,,,false
+presence/csi.csv,Wifi 人流,v1.1,extension,pipeline,csv,一區一個時間窗一列,window_start_t_sec+zone,W,由 Wifi 接收器的 CSI 推估各區的移動強度、相對密度與主要移動方向；不代表人數,tbd,,Wifi 接收器效果待確定；TK-2801 驗收通過才發布,false
+after_talk/crowd_after_talk.csv,講完被圍住,v1.1,core,manual_annotation,csv,一位講者一列,segment_id+speaker_id,E,講者下台後被圍住多久、最多幾人、說到話與等了又走的人數；人工計數,video_x5,,,false
+questions/onsite_qa.csv,台上 Q&A,v1,core,pipeline_reviewed,csv,一個問題一列,qa_id,B,現場台上被問到的問題與回答的起訖時間,audio,,,false
+questions/pre_event.csv,活動前收到的問題,v1,core,office,csv,一個問題一列,pre_q_id,form,活動前從報名表收到的問題，以及當天有沒有被回答,online,,,false
+questions/unasked.csv,想問但沒問到的問題,v1.1,core,field_staff,csv,一個問題一列,unasked_id,form;E,報名表、QR 與採訪收到、但沒有在台上問出口的問題,online,,,false
+questions/remembered_moments.csv,你記得哪一刻,v2,core,office,csv,一則回覆一列,response_id,online,活動後一週問參加者記得哪一刻，對回現場高峰與句子,online,,,false
+startups/topics.csv,創業題目分布,v1.1,core,office,csv,一個題目一列,topic_id,form,報名表收到的創業題目與階段；去識別後才收錄,online,,,false
+speakers/profiles.csv,講者公開資料,v0.5,core,office,csv,一位講者一列,speaker_id,online,學經歷、現職、YC 關係與跟台灣的連結；只用本人或其公司公開的來源,online,,,false
+speakers/news.csv,講者近期新聞,v0.5,core,office,csv,一則新聞一列,news_id,online,活動前一兩天的講者相關新聞；只放連結、發布者、日期與一句摘要,online,,,false
+speakers/public_projects.md,講者公開專案,v0.5,core,office,md,,,online,講者本人公開的程式專案；放連結、commit hash 與抓取日期，不放全文,online,,,false
+speakers/new_vs_old.csv,過去講法與這場對照,v0.5,bonus,office,csv,一個觀點一列,claim_id,online;B,講者過去公開講過的觀點，活動後對逐字稿標出這場重複、更新或新增,online,,,false
+social/speakers_yc_posts.csv,講者與 YC 的公開貼文,v0.5,core,office,csv,一則貼文一列,post_id,online,講者與 YC 人員本人帳號在活動前後的公開貼文；只放連結、日期與一句摘要,online,,,false
+social/post_to_moment.csv,公開貼文對到現場時刻,v2,core,pipeline_reviewed,csv,一則對應一列,match_id,online,用貼文的照片與引用句推回是現場哪一刻；屬於推論,online,,,false
+online/posts.csv,活動後公開貼文,v2,core,office,csv,一則貼文一列,post_id,online,活動後的公開貼文與互動數；只放連結、日期與一句摘要,online,,,false
+online/search_lift.csv,提到後的搜尋量,v2,extension,office,csv,一個詞一列,mention_id,online,講者提到工具或公司後，Google Trends 台灣搜尋量的變化,online,,,false
+side_events/luma.csv,周邊活動報名人數,v2,bonus,office,csv,一個周邊活動一列,event_id,online,台北場周邊活動 Luma 公開頁上的人數；不收名單,online,,,false
+outside/entry_minute.csv,進場與出場人流,v1.1,bonus,pipeline,csv,一分鐘一列,minute_idx+camera,H;X5,每分鐘走進與走出會場的人數,video_x5,,,false
+outside/passersby_10min.csv,看了看板卻沒進場,v1.1,bonus,pipeline_reviewed,csv,十分鐘一列,window_start_clock+camera,H;H2,場外看板前經過、停下、拍照的人數與同時段 QR 掃碼數,video_x5,,,false
+rankings/trivia.csv,冷知識排行榜,v1.1,bonus,office,csv,一則冷知識一列,trivia_id,,由其他表照公開規則算出的冷知識；不碰任何個人,integration,,,false
+scene/scene_description.md,場景描述,v1,core,field_staff,md,,,A;X5,用文字描述舞台、投影幕、燈光、座位配置與各時段的現場樣子，讓沒到場的人或 AI 能還原場景；不附照片,video_x5,Leon,,false
+derivatives/works.csv,二創回灌,v2,core,office,csv,一件作品一列,work_id,online,二創者回報的作品；和現場紀錄分開,derivatives_stream,,,false
+docs/field_reference.md,欄位說明,v0.5,core,pipeline,md,,,,每個 CSV 的每個欄位定義；由 schema/fields.csv 產生,integration,,,false
+docs/devices_and_positions.md,設備與機位,v0.5,core,office,md,,,,設備代號、放哪、收什麼,integration,,,false
+docs/limitations.md,量不到什麼,v0.5,core,office,md,,,,這包量不到、量不準與刻意不收的東西,integration,,,false
+docs/venue_map.md,場地平面圖,v0.5,bonus,office,md,,,online;X5,場地配置的文字描述與分區代號；不附圖檔,integration,,,false

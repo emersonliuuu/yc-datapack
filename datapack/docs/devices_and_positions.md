@@ -12,7 +12,8 @@
 | C | 手機錄音 | 前中段座位 | 台下反應 | `reactions/sound_events.csv` | 人夠才加 |
 | E | 手機，手持 | 跟講者下台、走廊 | 講完被圍住、現場筆記 | `after_talk/crowd_after_talk.csv`、`notes/` | 兩人也要有 |
 | H、H2 | 手機縮時 | 場外門口、YC 看板 | 路過、停下、拍照、進出場 | `outside/` | 兩人也要有 |
-| X5 | Insta360 X5，360 影片含收音 | 【座位區中段走道，架高】，全程錄 | 座位區、舞台、投影幕；台下聲音 | `reactions/phone_raise.csv`、`reactions/hand_raise.csv`、`reactions/stage_polls.csv`、`presence/`、`reactions/sound_events.csv`、`content/slide_changes.csv`（備援）、`outside/entry_minute.csv`、`scene/scene_description.md` | 確定使用 |
+| X5 | Insta360 X5，360 影片含收音 | 座位區中段走道，架高，全程錄 | 座位區、舞台、投影幕；台下聲音 | `reactions/phone_raise.csv`、`reactions/hand_raise.csv`、`reactions/stage_polls.csv`、`presence/`、`reactions/sound_events.csv`、`content/slide_changes.csv`（備援）、`outside/entry_minute.csv`、`scene/scene_description.md` | 確定使用 |
+| W | Wifi 接收器 | 【位置依 TK-2801 驗收結果】 | Wifi CSI | `presence/csi.csv` | 測得出來才放 |
 | form | 報名表與 QR 表單 | 線上 | 問題、創業題目 | `questions/`、`startups/` | 兩人也要有 |
 | online | 公開網路資料 | 線上 | 講者資料、貼文、搜尋量 | `speakers/`、`social/`、`online/`、`side_events/` | — |
 

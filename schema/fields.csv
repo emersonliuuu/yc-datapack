@@ -12,6 +12,14 @@ manifest.csv,method,string,conditional,,,一句話說明怎麼產生：工具或
 manifest.csv,updated_at,datetime,conditional,,,本檔最後一次更新的時間；status 不是 pending 時必填,2026-11-12T20:05:00+08:00
 manifest.csv,sha256,string,no,,,檔案內容的 SHA-256，小寫十六進位；資料夾留空,
 manifest.csv,note,string,no,,,其他說明,
+file_owners.csv,path,string,yes,,,檔案或資料夾路徑，同 manifest.csv,reactions/sound_events.csv
+file_owners.csv,title_zh,string,yes,,,中文名稱,掌聲、笑聲、全場安靜
+file_owners.csv,version_added,enum,yes,,v0.5|v1|v1.1|v2,第一次收錄的版本,v1
+file_owners.csv,owner_area,enum,yes,,audio|video_x5|online|derivatives_stream|integration|tbd,工作分類：audio 聲音；video_x5 Insta360 影片處理；online 網路與表單資料蒐集；derivatives_stream 二創與影片串流；integration 資料包統整；tbd 待指派,audio
+file_owners.csv,owner_area_zh,string,yes,,,工作分類的中文名稱,聲音
+file_owners.csv,owners,string,conditional,,,負責人，多人以 ; 分隔；有個別指定時以個別指定為準，否則為該分類的負責人；owner_area 為 tbd 時留空,Ray
+file_owners.csv,source_devices,id_list,no,,,來源設備代號，同 manifest.csv,B;C;X5
+file_owners.csv,note,string,no,,,其他說明，例如由誰提供來源資料,聲音事件由 Ray 提供
 content/agenda.csv,segment_id,id,yes,,,段落代號：S 加兩位數，依實際開始時間排序，從 S01 開始；v0.5 依公布順序暫編，v1 依實際順序重編並寫進 CHANGELOG,S03
 content/agenda.csv,segment_type,enum,yes,,opening|talk|fireside|panel|qa|break|closing|other,段落類型：演講後接著的問答不另立段落（問題記在 questions/onsite_qa.csv）；只有主辦方另外排的問答時段才標 qa,talk
 content/agenda.csv,title,string,no,,,段落標題：主辦方公布或現場投影上的講題原文；沒有就留空,How to Build the Future
@@ -209,6 +217,15 @@ presence/fill_order.csv,fill_80_t_sec,number,no,s,,這一群 seated_count 加總
 presence/fill_order.csv,fill_50_clock,datetime,no,,,fill_50_t_sec 換算的台北時間,2026-11-12T11:40:00+08:00
 presence/fill_order.csv,fill_80_clock,datetime,no,,,fill_80_t_sec 換算的台北時間,2026-11-12T11:50:00+08:00
 presence/fill_order.csv,fill_rank,integer,yes,,1|2|3,依 fill_80_t_sec 先後排名；未達八成的排在最後,1
+presence/csi.csv,window_start_t_sec,number,yes,s,,時間窗起點；窗長為 csi_window_sec,1500
+presence/csi.csv,start_clock,datetime,yes,,,window_start_t_sec 換算的台北時間,2026-11-12T12:25:00+08:00
+presence/csi.csv,window_sec,number,yes,s,,時間窗長度，等於 csi_window_sec,10
+presence/csi.csv,zone,id,yes,,,區域代號，同 docs/venue_map.md,Z3
+presence/csi.csv,device,id,yes,,W,Wifi 接收器設備代號,W
+presence/csi.csv,motion_level,number,yes,0–1,,該區移動強度：CSI 變化量依全場最大值正規化，0 為靜止、1 為全場最強,0.42
+presence/csi.csv,density_level,enum,no,,low|mid|high,該區和其他區相比的相對密度，依 csi_density_cutoffs 分級；不代表人數；做不到時留空,mid
+presence/csi.csv,direction,enum,no,,toward_stage|toward_exit|lateral|none,該區主要移動方向：toward_stage 往舞台；toward_exit 往出口；lateral 橫向；none 沒有明顯方向；做不到時留空,toward_exit
+presence/csi.csv,valid,boolean,yes,,true|false,這個時間窗的訊號是否可用；false 時 motion_level 仍照算但不建議引用,true
 after_talk/crowd_after_talk.csv,segment_id,id,yes,,,講者所在的段落,S03
 after_talk/crowd_after_talk.csv,speaker_id,string,yes,,,被圍住的講者,garry-tan
 after_talk/crowd_after_talk.csv,stage_exit_t_sec,number,yes,s,,講者離開講台的時間,3330.0

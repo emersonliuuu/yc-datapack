@@ -4,7 +4,7 @@
 
 ## 共通規則
 
-- **檔案格式**：CSV 一律 UTF-8（不含 BOM）、逗號分隔、換行為 LF、第一列為欄位名；含逗號、引號或換行的值用雙引號包起來（RFC 4180）。
+- **檔案格式**：CSV 一律 UTF-8 含 BOM（Excel 直接開繁體中文不會亂碼）、逗號分隔、換行為 LF、第一列為欄位名；含逗號、引號或換行的值用雙引號包起來（RFC 4180）。
 - **命名**：檔名、資料夾名與欄位名一律英文小寫，以 `_` 連接。
 - **時間軸**：`t_sec` 是從 T0 起算的秒數，T0 是開場第一段掌聲在主收音設備上的起點，T0 以前為負數；所有裝置以同一個聲音事件對時。`*_clock` 是同一時刻的台北時間。
 - **區間**：`start_t_sec` 到 `end_t_sec` 是左閉右開區間 [start, end)。
@@ -58,6 +58,7 @@
 | `reactions/timeline_minute.csv` | 每分鐘總表 | v1 | core | pipeline | 一分鐘一列 | `minute_idx` |
 | `presence/presence_minute.csv` | 在座、離席與站著聽 | v1.1 | core | pipeline | 一台鏡頭一區一分鐘一列 | `minute_idx+camera+zone` |
 | `presence/fill_order.csv` | 各區坐滿順序 | v1.1 | reduced | pipeline | 一個區域群組一列 | `zone_group` |
+| `presence/csi.csv` | Wifi 人流 | v1.1 | extension | pipeline | 一區一個時間窗一列 | `window_start_t_sec+zone` |
 | `after_talk/crowd_after_talk.csv` | 講完被圍住 | v1.1 | core | manual_annotation | 一位講者一列 | `segment_id+speaker_id` |
 | `questions/onsite_qa.csv` | 台上 Q&A | v1 | core | pipeline_reviewed | 一個問題一列 | `qa_id` |
 | `questions/pre_event.csv` | 活動前收到的問題 | v1 | core | office | 一個問題一列 | `pre_q_id` |
@@ -437,6 +438,24 @@
 | `fill_80_clock` | datetime | 可留空 |  |  | fill_80_t_sec 換算的台北時間 | `2026-11-12T11:50:00+08:00` |
 | `fill_rank` | integer | 必填 |  | `1` / `2` / `3` | 依 fill_80_t_sec 先後排名；未達八成的排在最後 | `1` |
 
+## `presence/csi.csv`：Wifi 人流
+
+由 Wifi 接收器的 CSI 推估各區的移動強度、相對密度與主要移動方向；不代表人數。
+
+版本：v1.1　優先序：extension　誰填：pipeline　一列代表：一區一個時間窗一列　主鍵：`window_start_t_sec+zone`　來源設備：W
+
+| 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `window_start_t_sec` | number | 必填 | s |  | 時間窗起點；窗長為 csi_window_sec | `1500` |
+| `start_clock` | datetime | 必填 |  |  | window_start_t_sec 換算的台北時間 | `2026-11-12T12:25:00+08:00` |
+| `window_sec` | number | 必填 | s |  | 時間窗長度，等於 csi_window_sec | `10` |
+| `zone` | id | 必填 |  |  | 區域代號，同 docs/venue_map.md | `Z3` |
+| `device` | id | 必填 |  | `W` | Wifi 接收器設備代號 | `W` |
+| `motion_level` | number | 必填 | 0–1 |  | 該區移動強度：CSI 變化量依全場最大值正規化，0 為靜止、1 為全場最強 | `0.42` |
+| `density_level` | enum | 可留空 |  | `low` / `mid` / `high` | 該區和其他區相比的相對密度，依 csi_density_cutoffs 分級；不代表人數；做不到時留空 | `mid` |
+| `direction` | enum | 可留空 |  | `toward_stage` / `toward_exit` / `lateral` / `none` | 該區主要移動方向：toward_stage 往舞台；toward_exit 往出口；lateral 橫向；none 沒有明顯方向；做不到時留空 | `toward_exit` |
+| `valid` | boolean | 必填 |  | `true` / `false` | 這個時間窗的訊號是否可用；false 時 motion_level 仍照算但不建議引用 | `true` |
+
 ## `after_talk/crowd_after_talk.csv`：講完被圍住
 
 講者下台後被圍住多久、最多幾人、說到話與等了又走的人數；人工計數。
@@ -787,36 +806,38 @@
 
 ## 參數
 
-狀態：`fixed` 已定；`to_test` 由測試定；`to_decide` 由負責人決定。定案後改 `schema/parameters.csv` 並寫進 CHANGELOG。
+狀態：`fixed` 已定；`to_test` 目前是建議起始值，試錄後依結果調整；`to_decide` 還沒決定。值有改時改 `schema/parameters.csv` 並寫進 CHANGELOG。
 
 | 參數 | 值 | 單位 | 用在 | 定義 | 狀態 |
 | --- | --- | --- | --- | --- | --- |
 | `t0` | opening_applause_onset |  | `all` | T0（t_sec = 0）：開場第一段掌聲在主收音設備上的起點；所有裝置以這個聲音事件對時 | fixed |
-| `slide_change_diff_threshold` | TBD | 0–1 | `content/slide_changes.csv` | 投影畫面前後差異達到這個值才算換頁（detect_method 為 visual_diff 時） | to_test |
-| `event_score_threshold` | TBD | 0–1 | `reactions/sound_events.csv` | 分析窗的類別分數達到這個值才算該類別 | to_test |
-| `event_merge_gap_sec` | TBD | s | `reactions/sound_events.csv` | 同類事件間隔小於這個秒數就合併 | to_test |
-| `event_min_sec` | TBD | s | `reactions/sound_events.csv` | 事件長度短於這個秒數不收錄 | to_test |
-| `silence_level_db` | TBD | dBFS | `reactions/sound_events.csv` | 全場安靜的音量上限 | to_test |
-| `silence_min_sec` | TBD | s | `reactions/sound_events.csv` | 全場安靜至少持續的秒數 | to_test |
-| `polite_window_sec` | TBD | s | `reactions/sound_events.csv` | 段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲 | to_test |
-| `analysis_fps` | TBD | fps | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | Insta360 影片拿來偵測的每秒張數 | to_decide |
-| `person_conf_min` | TBD | 0–1 | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | 人的偵測信心達到這個值才算一個人 | to_test |
-| `phone_conf_min` | TBD | 0–1 | `reactions/phone_raise.csv` | 手機的偵測信心達到這個值才算有手機 | to_test |
-| `phone_up_min_sec` | TBD | s | `reactions/phone_raise.csv` | 手機高於肩膀持續達到這個秒數才算「舉手機」 | to_test |
-| `hand_raise_min_sec` | TBD | s | `reactions/hand_raise.csv;reactions/stage_polls.csv` | 手腕高於頭頂持續達到這個秒數才算「舉手」 | to_test |
-| `stand_min_sec` | TBD | s | `presence/presence_minute.csv` | 同一位置持續站立達到這個秒數才算「站著聽」；短於這個秒數視為起身走動 | to_test |
-| `raise_event_min_people` | TBD | people | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 同一秒舉手機或舉手的人數達到這個值才算進入事件 | to_test |
-| `raise_event_min_sec` | TBD | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件短於這個秒數不收錄 | to_test |
-| `raise_merge_gap_sec` | TBD | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件間隔小於這個秒數就合併 | to_test |
-| `peak_merge_gap_sec` | TBD | s | `reactions/peaks.csv` | 高峰候選間隔小於這個秒數就合併成同一窗 | to_test |
+| `slide_change_diff_threshold` | 0.3 | 0–1 | `content/slide_changes.csv` | 投影畫面前後差異達到這個值才算換頁（detect_method 為 visual_diff 時） | to_test |
+| `event_score_threshold` | 0.5 | 0–1 | `reactions/sound_events.csv` | 分析窗的類別分數達到這個值才算該類別 | to_test |
+| `event_merge_gap_sec` | 1 | s | `reactions/sound_events.csv` | 同類事件間隔小於這個秒數就合併 | to_test |
+| `event_min_sec` | 1 | s | `reactions/sound_events.csv` | 事件長度短於這個秒數不收錄 | to_test |
+| `silence_level_db` | -50 | dBFS | `reactions/sound_events.csv` | 全場安靜的音量上限 | to_test |
+| `silence_min_sec` | 3 | s | `reactions/sound_events.csv` | 全場安靜至少持續的秒數 | to_test |
+| `polite_window_sec` | 10 | s | `reactions/sound_events.csv` | 段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲 | to_test |
+| `analysis_fps` | 2 | fps | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | Insta360 影片拿來偵測的每秒張數 | fixed |
+| `person_conf_min` | 0.5 | 0–1 | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | 人的偵測信心達到這個值才算一個人 | to_test |
+| `phone_conf_min` | 0.4 | 0–1 | `reactions/phone_raise.csv` | 手機的偵測信心達到這個值才算有手機 | to_test |
+| `phone_up_min_sec` | 1 | s | `reactions/phone_raise.csv` | 手機高於肩膀持續達到這個秒數才算「舉手機」 | to_test |
+| `hand_raise_min_sec` | 1 | s | `reactions/hand_raise.csv;reactions/stage_polls.csv` | 手腕高於頭頂持續達到這個秒數才算「舉手」 | to_test |
+| `stand_min_sec` | 30 | s | `presence/presence_minute.csv` | 同一位置持續站立達到這個秒數才算「站著聽」；短於這個秒數視為起身走動 | to_test |
+| `raise_event_min_people` | 3 | people | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 同一秒舉手機或舉手的人數達到這個值才算進入事件 | to_test |
+| `raise_event_min_sec` | 1 | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件短於這個秒數不收錄 | to_test |
+| `raise_merge_gap_sec` | 2 | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件間隔小於這個秒數就合併 | to_test |
+| `peak_merge_gap_sec` | 3 | s | `reactions/peaks.csv` | 高峰候選間隔小於這個秒數就合併成同一窗 | to_test |
 | `pre_peak_window_sec` | 3 | s | `reactions/peaks.csv` | 高峰前要看的秒數（Franck 定為三秒） | fixed |
-| `w_applause` | TBD |  | `reactions/peaks.csv` | score 中掌聲秒數的權重 | to_decide |
-| `w_laughter` | TBD |  | `reactions/peaks.csv` | score 中笑聲秒數的權重 | to_decide |
-| `w_phone` | TBD |  | `reactions/peaks.csv` | score 中舉手機人數的權重 | to_decide |
-| `stage_poll_window_sec` | TBD | s | `reactions/stage_polls.csv` | 講者提出調查後計算回應的秒數 | to_test |
+| `w_applause` | 1 |  | `reactions/peaks.csv` | score 中掌聲秒數的權重 | fixed |
+| `w_laughter` | 2 |  | `reactions/peaks.csv` | score 中笑聲秒數的權重 | fixed |
+| `w_phone` | 1 |  | `reactions/peaks.csv` | score 中舉手機人數的權重 | fixed |
+| `stage_poll_window_sec` | 8 | s | `reactions/stage_polls.csv` | 講者提出調查後計算回應的秒數 | to_test |
 | `fill_thresholds` | 0.5;0.8 | ratio | `presence/fill_order.csv` | 坐滿順序的兩個門檻（最大值的五成與八成） | fixed |
-| `crowd_radius_m` | TBD | m | `after_talk/crowd_after_talk.csv` | 講者周圍幾公尺內算「圍住」 | to_decide |
-| `crowd_min_people` | TBD | people | `after_talk/crowd_after_talk.csv` | 圈內少於這個人數持續 30 秒就算結束 | to_decide |
-| `stop_min_sec` | TBD | s | `outside/passersby_10min.csv` | 在看板前停留至少這個秒數才算「停下」 | to_decide |
+| `crowd_radius_m` | 1.5 | m | `after_talk/crowd_after_talk.csv` | 講者周圍幾公尺內算「圍住」 | fixed |
+| `crowd_min_people` | 3 | people | `after_talk/crowd_after_talk.csv` | 圈內少於這個人數持續 30 秒就算結束 | fixed |
+| `stop_min_sec` | 3 | s | `outside/passersby_10min.csv` | 在看板前停留至少這個秒數才算「停下」 | fixed |
 | `bathroom_min_minutes` | 5 | min | `rankings/trivia.csv` | 廁所時段：同一區離席後出現回座的最短分鐘數；以區為單位看 left_count 與 returned_count，不追個人 | fixed |
 | `bathroom_max_minutes` | 15 | min | `rankings/trivia.csv` | 廁所時段：同一區離席後出現回座的最長分鐘數；以區為單位看 left_count 與 returned_count，不追個人 | fixed |
+| `csi_window_sec` | 10 | s | `presence/csi.csv` | CSI 每個時間窗的長度 | to_test |
+| `csi_density_cutoffs` | 0.33;0.67 | 0–1 | `presence/csi.csv` | density_level 分級：同一時間窗各區 motion_level 的分位數，低於第一個為 low、高於第二個為 high | to_test |

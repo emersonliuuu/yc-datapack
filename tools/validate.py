@@ -28,7 +28,7 @@ OPEN_ENUM_TOKENS = {"speaker_id"}
 
 
 def read_csv(path):
-    with open(path, newline="", encoding="utf-8") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
@@ -78,7 +78,9 @@ def main():
             continue
         cols = by_file[f["path"]]
         expected = [c["column"] for c in cols]
-        with open(path, newline="", encoding="utf-8") as fh:
+        if not path.read_bytes().startswith(b"\xef\xbb\xbf"):
+            errors.append(f"{f['path']}：不是 UTF-8 含 BOM")
+        with open(path, newline="", encoding="utf-8-sig") as fh:
             reader = csv.reader(fh)
             header = next(reader, [])
             rows = list(reader)

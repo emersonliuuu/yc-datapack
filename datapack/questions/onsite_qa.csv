@@ -1,1 +1,1 @@
-qa_id,segment_id,answerer_speaker_id,asker_type,question_start_t_sec,answer_start_t_sec,answer_end_t_sec,question_sentence_ids,answer_sentence_ids,question_text,category,is_sensitive
+﻿qa_id,segment_id,answerer_speaker_id,asker_type,question_start_t_sec,answer_start_t_sec,answer_end_t_sec,question_sentence_ids,answer_sentence_ids,question_text,category,is_sensitive

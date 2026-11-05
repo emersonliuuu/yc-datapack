@@ -1,1 +1,1 @@
-block_id,segment_id,speaker_id,start_t_sec,end_t_sec,sentence_ids,slide_ids,function,function_ai,function_human,labels_agree,char_count,char_share,peak_count,phone_count_max
+﻿block_id,segment_id,speaker_id,start_t_sec,end_t_sec,sentence_ids,slide_ids,function,function_ai,function_human,labels_agree,char_count,char_share,peak_count,phone_count_max

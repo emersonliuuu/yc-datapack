@@ -1,1 +1,1 @@
-change_seq,from_slide_id,slide_id,segment_id,speaker_id,start_t_sec,end_t_sec,start_clock,dwell_sec,detect_method,confidence,camera
+﻿change_seq,from_slide_id,slide_id,segment_id,speaker_id,start_t_sec,end_t_sec,start_clock,dwell_sec,detect_method,confidence,camera

@@ -1,4 +1,4 @@
-path,title_zh,description,version_added,status,row_count,source_devices,filled_by,priority,method,updated_at,sha256,note
+﻿path,title_zh,description,version_added,status,row_count,source_devices,filled_by,priority,method,updated_at,sha256,note
 00_README.md,資料包入口,這包是什麼、先讀哪幾個檔、讀數字前要知道的事、三條使用規則、這版改了什麼,v0.5,pending,,,office,core,,,,
 01_transcript_segmented.md,全場逐字稿（分段）,給人或 AI 一次讀完的逐字稿：每段標時間、講者、簡報頁與現場事件；內容由 content/transcript.csv 產生,v1,pending,,B;B2;B3;A1,pipeline,core,,,,
 CHANGELOG.md,版本紀錄,每一版新增、修改、移除了哪些檔案與欄位,v0.5,pending,,,office,core,,,,
@@ -19,6 +19,7 @@ reactions/stage_polls.csv,講者在台上做的現場調查,講者請台下舉�
 reactions/timeline_minute.csv,每分鐘總表,每分鐘彙整講者、簡報、聲音、舉手機與在座人數，給 AI 一次讀完,v1,pending,,B;C;A;X5,pipeline,core,,,,
 presence/presence_minute.csv,在座、離席與站著聽,每區每分鐘的可見人數、坐著與站著的人數、離席與回座,v1.1,pending,,X5,pipeline,core,,,,
 presence/fill_order.csv,各區坐滿順序,前、中、後三區分別在什麼時候坐到五成與八成,v1.1,pending,,X5,pipeline,reduced,,,,
+presence/csi.csv,Wifi 人流,由 Wifi 接收器的 CSI 推估各區的移動強度、相對密度與主要移動方向；不代表人數,v1.1,pending,,W,pipeline,extension,,,,
 after_talk/crowd_after_talk.csv,講完被圍住,講者下台後被圍住多久、最多幾人、說到話與等了又走的人數；人工計數,v1.1,pending,,E,manual_annotation,core,,,,
 questions/onsite_qa.csv,台上 Q&A,現場台上被問到的問題與回答的起訖時間,v1,pending,,B,pipeline_reviewed,core,,,,
 questions/pre_event.csv,活動前收到的問題,活動前從報名表收到的問題，以及當天有沒有被回答,v1,pending,,form,office,core,,,,
