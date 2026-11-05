@@ -20,7 +20,7 @@ reactions/stage_polls.csv,講者在台上做的現場調查,v1,core,pipeline_rev
 reactions/timeline_minute.csv,每分鐘總表,v1,core,pipeline,csv,一分鐘一列,minute_idx,B;C;A;X5,每分鐘彙整講者、簡報、聲音、舉手機與在座人數，給 AI 一次讀完,video_x5,,聲音事件與逐字稿由 Ray 提供,false
 presence/presence_minute.csv,在座、離席與站著聽,v1.1,core,pipeline,csv,一台鏡頭一區一分鐘一列,minute_idx+camera+zone,X5,每區每分鐘的可見人數、坐著與站著的人數、離席與回座,video_x5,,,false
 presence/fill_order.csv,各區坐滿順序,v1.1,reduced,pipeline,csv,一個區域群組一列,zone_group,X5,前、中、後三區分別在什麼時候坐到五成與八成,video_x5,,,false
-presence/csi.csv,Wifi 人流,v1.1,extension,pipeline,csv,一區一個時間窗一列,window_start_t_sec+zone,W,由 Wifi 接收器的 CSI 推估各區的移動強度、相對密度與主要移動方向；不代表人數,tbd,,Wifi 接收器效果待確定；TK-2801 驗收通過才發布,false
+presence/csi.csv,Wifi 人流,v1.1,extension,pipeline,csv,一區一個時間窗一列,window_start_t_sec+zone,W,由 Wifi 接收器的 CSI 推估各區的移動強度、相對密度與主要移動方向；不代表人數,wifi,,Wifi 接收器效果待確定；TK-2801 驗收通過才發布,false
 after_talk/crowd_after_talk.csv,講完被圍住,v1.1,core,manual_annotation,csv,一位講者一列,segment_id+speaker_id,E,講者下台後被圍住多久、最多幾人、說到話與等了又走的人數；人工計數,video_x5,,,false
 questions/onsite_qa.csv,台上 Q&A,v1,core,pipeline_reviewed,csv,一個問題一列,qa_id,B,現場台上被問到的問題與回答的起訖時間,audio,,,false
 questions/pre_event.csv,活動前收到的問題,v1,core,office,csv,一個問題一列,pre_q_id,form,活動前從報名表收到的問題，以及當天有沒有被回答,online,,,false

@@ -28,5 +28,5 @@ crowd_min_people,3,people,after_talk/crowd_after_talk.csv,圈內少於這個人�
 stop_min_sec,3,s,outside/passersby_10min.csv,在看板前停留至少這個秒數才算「停下」,fixed,video_x5
 bathroom_min_minutes,5,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最短分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed,integration
 bathroom_max_minutes,15,min,rankings/trivia.csv,廁所時段：同一區離席後出現回座的最長分鐘數；以區為單位看 left_count 與 returned_count，不追個人,fixed,integration
-csi_window_sec,10,s,presence/csi.csv,CSI 每個時間窗的長度,to_test,tbd
-csi_density_cutoffs,0.33;0.67,0–1,presence/csi.csv,density_level 分級：同一時間窗各區 motion_level 的分位數，低於第一個為 low、高於第二個為 high,to_test,tbd
+csi_window_sec,10,s,presence/csi.csv,CSI 每個時間窗的長度,to_test,wifi
+csi_density_cutoffs,0.33;0.67,0–1,presence/csi.csv,density_level 分級：同一時間窗各區 motion_level 的分位數，低於第一個為 low、高於第二個為 high,to_test,wifi

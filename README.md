@@ -79,6 +79,7 @@ datapack/                     資料包本體（用 tools/package.py 打包）
 | Insta360 影片處理 | Ivan、Leon、Jack | 舉手、舉手機、在座、反應高峰、每分鐘總表、現場手持與場外人流；簡報換頁與簡報筆記由 Jack、場景描述由 Leon |
 | 網路與表單資料蒐集 | Edward | 講者資料、貼文、搜尋量、周邊活動、報名表與問卷 |
 | 二創與影片串流 | Mike | 二創回灌 |
+| Wifi 人流 | Albert | Wifi 接收器與 `presence/csi.csv` |
 | 資料包統整 | Emerson | 入口說明、版本紀錄、目錄、議程、冷知識與 docs/ |
 
 ## 已決定
@@ -90,7 +91,6 @@ datapack/                     資料包本體（用 tools/package.py 打包）
 
 ## 待確認
 
-- **Wifi 人流負責人**：`presence/csi.csv` 還沒有負責人。
 - **測試門檻**：`schema/parameters.csv` 中 `to_test` 的值是建議起始值，試錄後由該參數 `owner_area` 的負責人調整。
 - **場地細節**：`docs/venue_map.md` 的分區與 X5 架設高度，踩點後回填。
 - **與 v0 刻意不同的地方**：台下影像只用 X5、舉手與舉手機分開、舉手機改為一次事件一列、只放文字、每分鐘總表放原句不摘要。對照與原因見 [`schema/franck_v0_mapping.md`](schema/franck_v0_mapping.md)，要和 Franck 確認。

@@ -15,7 +15,7 @@ manifest.csv,note,string,no,,,其他說明,
 file_owners.csv,path,string,yes,,,檔案或資料夾路徑，同 manifest.csv,reactions/sound_events.csv
 file_owners.csv,title_zh,string,yes,,,中文名稱,掌聲、笑聲、全場安靜
 file_owners.csv,version_added,enum,yes,,v0.5|v1|v1.1|v2,第一次收錄的版本,v1
-file_owners.csv,owner_area,enum,yes,,audio|video_x5|online|derivatives_stream|integration|tbd,工作分類：audio 聲音；video_x5 Insta360 影片處理；online 網路與表單資料蒐集；derivatives_stream 二創與影片串流；integration 資料包統整；tbd 待指派,audio
+file_owners.csv,owner_area,enum,yes,,audio|video_x5|online|derivatives_stream|wifi|integration|tbd,工作分類：audio 聲音；video_x5 Insta360 影片處理；online 網路與表單資料蒐集；derivatives_stream 二創與影片串流；wifi Wifi 人流；integration 資料包統整；tbd 待指派,audio
 file_owners.csv,owner_area_zh,string,yes,,,工作分類的中文名稱,聲音
 file_owners.csv,owners,string,conditional,,,負責人，多人以 ; 分隔；有個別指定時以個別指定為準，否則為該分類的負責人；owner_area 為 tbd 時留空,Ray
 file_owners.csv,source_devices,id_list,no,,,來源設備代號，同 manifest.csv,B;C;X5

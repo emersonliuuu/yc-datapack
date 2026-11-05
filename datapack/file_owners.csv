@@ -20,7 +20,7 @@ reactions/stage_polls.csv,講者在台上做的現場調查,v1,video_x5,Insta360
 reactions/timeline_minute.csv,每分鐘總表,v1,video_x5,Insta360 影片處理,Ivan;Leon;Jack,B;C;A;X5,聲音事件與逐字稿由 Ray 提供
 presence/presence_minute.csv,在座、離席與站著聽,v1.1,video_x5,Insta360 影片處理,Ivan;Leon;Jack,X5,
 presence/fill_order.csv,各區坐滿順序,v1.1,video_x5,Insta360 影片處理,Ivan;Leon;Jack,X5,
-presence/csi.csv,Wifi 人流,v1.1,tbd,待指派,,W,Wifi 接收器效果待確定；TK-2801 驗收通過才發布
+presence/csi.csv,Wifi 人流,v1.1,wifi,Wifi 人流,Albert,W,Wifi 接收器效果待確定；TK-2801 驗收通過才發布
 after_talk/crowd_after_talk.csv,講完被圍住,v1.1,video_x5,Insta360 影片處理,Ivan;Leon;Jack,E,
 questions/onsite_qa.csv,台上 Q&A,v1,audio,聲音,Ray,B,
 questions/pre_event.csv,活動前收到的問題,v1,online,網路與表單資料蒐集,Edward,form,
