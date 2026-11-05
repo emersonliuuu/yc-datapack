@@ -9,6 +9,12 @@
 - 新增：`reactions/hand_raise.csv`（舉手）
 - 移除：`scene/photos/`、`scene/stage_splat.ply`；`scene/scene_notes.md` 改為 `scene/scene_description.md`，資料包只放文字
 
+## 架構調整：負責人與參數（發布前）
+
+- CSV 改為 UTF-8 含 BOM
+- 新增：`file_owners.csv`（內部用，打包時排除）、`presence/csi.csv`（Wifi 人流，v1.1 延伸）
+- 參數定案：每秒取 2 張、高峰權重 1/2/1、圍住 1.5 公尺與 3 人、停下 3 秒；其餘測試門檻填入建議起始值
+
 ## v0.5（【發布日期】）
 
 - 新增：`content/agenda.csv`（只有公開的講者名單與開門時間）、`speakers/`、`social/speakers_yc_posts.csv`、`docs/venue_map.md`

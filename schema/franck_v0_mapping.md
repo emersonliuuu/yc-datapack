@@ -18,7 +18,7 @@
 | 中文檔名（`00_先看這個.md` 等） | 英文檔名 | 對照見 `README.md` |
 | `scene/photos/`、3D 模型 | `scene/scene_description.md` | 資料包只放文字，場景改用文字描述 |
 | `docs/場地平面圖`（圖） | `docs/venue_map.md`（文字） | 同上 |
-| UTF-8 含 BOM | UTF-8 不含 BOM | 待確認：Excel 直接開中文會亂碼時再改回 BOM |
+| UTF-8 含 BOM | UTF-8 含 BOM | 同 v0 |
 
 ## 欄位層級
 
