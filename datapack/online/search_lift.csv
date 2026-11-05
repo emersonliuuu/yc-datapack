@@ -1,1 +1,1 @@
-mention_id,normalized_name,geo,granularity,baseline_index,window_peak_index,lift_ratio,retrieved_at
+mention_id,normalized_name,mention_t_sec,geo,granularity,index_1h_before,index_1h_after,baseline_index,window_peak_index,lift_ratio,retrieved_at,source_url

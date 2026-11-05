@@ -1,10 +1,13 @@
 file,column,type,required,unit,allowed_values,definition,example
 manifest.csv,path,string,yes,,,資料包內的相對路徑，以 / 分隔；資料夾以 / 結尾,content/transcript.csv
 manifest.csv,title_zh,string,yes,,,檔案的中文名稱,逐字稿
+manifest.csv,description,string,yes,,,這個檔案在說什麼，一句話,逐句逐字稿
 manifest.csv,version_added,enum,yes,,v0.5|v1|v1.1|v2,第一次出現在資料包的版本,v1
 manifest.csv,status,enum,yes,,included|partial|pending|not_available,本版狀態：included 完整收錄；partial 部分收錄（缺漏寫在 docs/limitations.md）；pending 預計之後的版本加入；not_available 這次活動收不到,included
 manifest.csv,row_count,integer,no,rows,,CSV 的資料列數，不含標題列；非 CSV 留空,1834
 manifest.csv,source_devices,id_list,no,,,產生這個檔案的設備代號，以 ; 分隔，代號見 docs/devices_and_positions.md；線上來源填 online；表單填 form,B;B2;A1
+manifest.csv,filled_by,enum,yes,,pipeline|pipeline_reviewed|office|manual_annotation|field_staff,誰填：pipeline 流程自動；pipeline_reviewed 流程自動加人工確認或抽查；office 辦公室整理；manual_annotation 人工看畫面或聽音檔標記；field_staff 現場人員記錄,pipeline_reviewed
+manifest.csv,priority,enum,yes,,core|bonus|reduced|extension,優先序：core 核心，一定要有；bonus 加分，做得到就放；reduced 降級，只做粗的版本；extension 延伸，測得出來才放,core
 manifest.csv,method,string,conditional,,,一句話說明怎麼產生：工具或模型名稱加人工步驟；status 不是 pending 時必填,Whisper large-v3 轉寫後多來源比對，不一致處人工聽音檔
 manifest.csv,updated_at,datetime,conditional,,,本檔最後一次更新的時間；status 不是 pending 時必填,2026-11-12T20:05:00+08:00
 manifest.csv,sha256,string,no,,,檔案內容的 SHA-256，小寫十六進位；資料夾留空,
@@ -25,7 +28,8 @@ content/transcript.csv,speaker_id,string,yes,,speaker_id|host|audience|unknown,�
 content/transcript.csv,start_t_sec,number,yes,s,,句子第一個字開始發音的時間,1532.18
 content/transcript.csv,end_t_sec,number,yes,s,,句子最後一個字結束發音的時間,1536.90
 content/transcript.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:32+08:00
-content/transcript.csv,text,string,yes,,,定稿文字：照原話，不改寫、不摘要；只修正錯字、人名與專有名詞，保留口語贅詞；is_sensitive 為 true 時改為「[不公開]」,The best founders I know talk to users every week.
+content/transcript.csv,text_raw,string,yes,,,轉寫原文：主要轉寫來源的模型輸出，未經人工修改；is_sensitive 為 true 時改為「[不公開]」,the best founders i know talk to users every week
+content/transcript.csv,text,string,yes,,,校對版：照原話，不改寫、不摘要；只修正錯字、人名與專有名詞，保留口語贅詞；is_sensitive 為 true 時改為「[不公開]」,The best founders I know talk to users every week.
 content/transcript.csv,lang,enum,yes,,zh|en|mixed,句子語言：同一句中文與英文各至少一個實詞時填 mixed,en
 content/transcript.csv,slide_id,id,no,,,start_t_sec 當下投影幕上的簡報頁，對應 content/slides_notes.csv；沒有投影時留空,S03-P012
 content/transcript.csv,verification,enum,yes,,agreed|resolved|single_source|unverified,定稿方式：agreed 三個以上來源文字一致；resolved 來源不一致、人工聽音檔後定稿；single_source 只有一個來源可用；unverified 尚未校對,agreed
@@ -35,6 +39,7 @@ content/transcript.csv,sensitive_reason,enum,conditional,,personal|company_inter
 content/transcript.csv,asr_confidence,number,no,0–1,,轉寫模型給的平均信心值；人工定稿後仍保留原值,0.91
 content/slides_notes.csv,slide_id,id,yes,,,簡報頁代號：segment_id 加 -P 加三位數頁碼；拿不到頁碼時依首次出現順序編號,S03-P012
 content/slides_notes.csv,segment_id,id,yes,,,所屬段落，對應 content/agenda.csv,S03
+content/slides_notes.csv,speaker_id,string,yes,,,這頁由誰講，同 content/transcript.csv,garry-tan
 content/slides_notes.csv,page_no,integer,no,,,簡報檔上的頁碼；拿不到簡報檔時留空,12
 content/slides_notes.csv,page_title,string,no,,,投影上的標題原文；頁面沒有標題時留空,Talk to users
 content/slides_notes.csv,notes,string,no,,,我們寫的一到兩句筆記：這頁在講什麼；不複製頁面全文,用三個新創的例子說明每週訪談使用者的頻率
@@ -43,8 +48,10 @@ content/slides_notes.csv,first_shown_t_sec,number,yes,s,,第一次出現在投�
 content/slides_notes.csv,total_dwell_sec,number,yes,s,,這頁累計顯示秒數；同頁多次出現相加,95.5
 content/slides_notes.csv,show_count,integer,yes,,,這頁出現的次數,2
 content/slide_changes.csv,change_seq,integer,yes,,,全場換頁序號：從 1 開始依 start_t_sec 遞增,57
+content/slide_changes.csv,from_slide_id,id,no,,,換頁前的簡報頁；段落第一頁留空,S03-P011
 content/slide_changes.csv,slide_id,id,yes,,,換到的簡報頁，對應 content/slides_notes.csv,S03-P012
 content/slide_changes.csv,segment_id,id,yes,,,所屬段落，對應 content/agenda.csv,S03
+content/slide_changes.csv,speaker_id,string,yes,,,換頁當下的講者,garry-tan
 content/slide_changes.csv,start_t_sec,number,yes,s,,新頁第一次完整顯示的時間；動畫逐步出現的頁以第一個畫面為準，動畫中的變化不算換頁,1610.0
 content/slide_changes.csv,end_t_sec,number,yes,s,,下一次換頁的 start_t_sec；段落最後一頁以段落的 end_t_sec 為準,1672.3
 content/slide_changes.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:26:50+08:00
@@ -66,11 +73,12 @@ content/segment_function.csv,labels_agree,boolean,conditional,,true|false,functi
 content/segment_function.csv,char_count,integer,yes,chars,,段落內所有句子 text 的字數：中文一字算 1，英文一個單字算 1，數字串算 1，不含標點與空白,186
 content/segment_function.csv,char_share,number,yes,0–1,,char_count 除以同一 segment_id 所有功能段落 char_count 的總和,0.083
 content/segment_function.csv,peak_count,integer,yes,,,reactions/peaks.csv 中 peak_t_sec 落在本段起訖內的高峰數,1
-content/segment_function.csv,raised_ratio_max,number,no,0–1,,本段期間 reactions/phone_raise.csv 的區面積加權 raised_ratio 最大值；沒有影像時留空,0.12
+content/segment_function.csv,raised_ratio_max,number,no,0–1,,本段期間 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空,0.12
 content/taiwan_mentions.csv,mention_id,id,yes,,,TW 加四位數，依 t_sec 排序,TW0003
 content/taiwan_mentions.csv,sentence_id,id,yes,,,提到的句子，對應 content/transcript.csv,T00208
 content/taiwan_mentions.csv,segment_id,id,yes,,,所屬段落,S05
 content/taiwan_mentions.csv,speaker_id,string,yes,,,說話者，同 content/transcript.csv,garry-tan
+content/taiwan_mentions.csv,sentence_text,string,yes,,,所在句子的 text，同 content/transcript.csv，方便不用另外查表,We love coming to Taipei because of TSMC.
 content/taiwan_mentions.csv,t_sec,number,yes,s,,所在句子的 start_t_sec,4021.6
 content/taiwan_mentions.csv,term,string,yes,,,逐字稿中的原詞,TSMC
 content/taiwan_mentions.csv,normalized,string,yes,,,標準名稱：地名與機構用官方英文或中文全名，其他用最常見寫法,台灣積體電路製造
@@ -79,6 +87,7 @@ content/tool_mentions.csv,mention_id,id,yes,,,TM 加四位數，依 t_sec 排序
 content/tool_mentions.csv,sentence_id,id,yes,,,提到的句子，對應 content/transcript.csv,T00377
 content/tool_mentions.csv,segment_id,id,yes,,,所屬段落,S06
 content/tool_mentions.csv,speaker_id,string,yes,,,說話者，同 content/transcript.csv,diana-hu
+content/tool_mentions.csv,sentence_text,string,yes,,,所在句子的 text，同 content/transcript.csv，方便不用另外查表,Half the batch builds with Cursor now.
 content/tool_mentions.csv,t_sec,number,yes,s,,所在句子的 start_t_sec,5133.0
 content/tool_mentions.csv,term,string,yes,,,逐字稿中的原詞,cursor
 content/tool_mentions.csv,normalized_name,string,yes,,,官方名稱,Cursor
@@ -86,7 +95,7 @@ content/tool_mentions.csv,entity_type,enum,yes,,tool|company|product|open_source
 content/tool_mentions.csv,official_url,url,no,,,官方網站或 repo；查不到留空,https://cursor.com
 content/tool_mentions.csv,is_yc_company,boolean,no,,true|false,依 YC 官方公司目錄判定；查不到留空,false
 reactions/sound_events.csv,event_id,id,yes,,,SE 加五位數，依 start_t_sec 排序,SE00118
-reactions/sound_events.csv,event,enum,yes,,applause|laughter|silence,applause 掌聲；laughter 笑聲；silence 全場安靜：段落進行中講台與台下都沒有語音、掌聲與笑聲，且音量低於 silence_level_db 連續 silence_min_sec 以上,laughter
+reactions/sound_events.csv,event,enum,yes,,applause|laughter|silence|chatter,applause 掌聲；laughter 笑聲；silence 全場安靜：段落進行中講台與台下都沒有語音、掌聲與笑聲，且音量低於 silence_level_db 連續 silence_min_sec 以上；chatter 台下討論聲：台下多人同時說話、不是講台的語音,laughter
 reactions/sound_events.csv,mic,id,yes,,B|C|A1,判定這個事件的收音設備代號；同一事件多支收到時填訊號最強的一支,B
 reactions/sound_events.csv,start_t_sec,number,yes,s,,第一個分數超過 event_score_threshold 的分析窗起點,1544.0
 reactions/sound_events.csv,end_t_sec,number,yes,s,,最後一個超過門檻的分析窗終點；間隔小於 event_merge_gap_sec 的同類事件合併,1547.8
@@ -94,16 +103,23 @@ reactions/sound_events.csv,start_clock,datetime,yes,,,start_t_sec 換算的台�
 reactions/sound_events.csv,duration_sec,number,yes,s,,end_t_sec 減 start_t_sec；短於 event_min_sec 的事件不收錄,3.8
 reactions/sound_events.csv,score_mean,number,yes,0–1,,事件期間各分析窗該類別分數的平均,0.72
 reactions/sound_events.csv,score_max,number,yes,0–1,,事件期間各分析窗該類別分數的最大值,0.94
-reactions/sound_events.csv,is_polite,boolean,yes,,true|false,禮貌性掌聲：event 為 applause 且 start_t_sec 落在任一段落開始或結束前後 polite_window_sec 秒內；laughter 與 silence 一律 false,false
+reactions/sound_events.csv,level_db_max,number,no,dBFS,,事件期間的音量峰值，反映強度；收音設備增益不同，只能在同一支 mic 內比較,-12.5
+reactions/sound_events.csv,is_polite,boolean,yes,,true|false,禮貌性掌聲：event 為 applause 且 start_t_sec 落在任一段落開始或結束前後 polite_window_sec 秒內；laughter、silence 與 chatter 一律 false,false
 reactions/sound_events.csv,segment_id,id,yes,,,start_t_sec 所屬的段落,S03
 reactions/sound_events.csv,sentence_id,id,no,,,start_t_sec 當下正在說或最近一句已說完的句子,T00043
 reactions/sound_events.csv,slide_id,id,no,,,start_t_sec 當下投影幕上的頁,S03-P011
-reactions/phone_raise.csv,t_sec,integer,yes,s,,這一秒的起點（整數秒）,1545
-reactions/phone_raise.csv,clock,datetime,yes,,,t_sec 換算的台北時間,2026-11-12T12:25:45+08:00
-reactions/phone_raise.csv,camera,id,yes,,R|D1|D2,拍攝座位區的設備代號,R
-reactions/phone_raise.csv,zone,id,yes,,,座位區代號，範圍畫在 docs/venue_map.md,Z2
-reactions/phone_raise.csv,raised_ratio,number,conditional,0–1,,該區頭頂線以上判定區中，相對座位基準畫面出現變化、且持續不超過 raise_max_sec 秒的面積比例；是面積比例，不是人數，分不出手或手機；valid 為 false 時留空,0.08
-reactions/phone_raise.csv,valid,boolean,yes,,true|false,這一秒的畫面是否可用；鏡頭移動、被擋、太暗或投影強光蓋過時為 false,true
+reactions/phone_raise.csv,raise_id,id,yes,,,RS 加五位數，依 start_t_sec 排序,RS00012
+reactions/phone_raise.csv,start_t_sec,number,yes,s,,事件起點：每秒的區面積加權 raised_ratio 第一次達到 raise_event_threshold 的秒。各區 raised_ratio 是該區頭頂線以上判定區中，相對座位基準畫面出現變化、且持續不超過 raise_max_sec 秒的面積比例；加權是依各區在畫面中的座位面積,1544
+reactions/phone_raise.csv,end_t_sec,number,yes,s,,事件終點：加權 raised_ratio 回到門檻以下的秒；間隔小於 event_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄,1551
+reactions/phone_raise.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:44+08:00
+reactions/phone_raise.csv,duration_sec,number,yes,s,,end_t_sec 減 start_t_sec,7
+reactions/phone_raise.csv,peak_t_sec,number,yes,s,,事件內加權 raised_ratio 最大的秒,1546
+reactions/phone_raise.csv,segment_id,id,yes,,,peak_t_sec 所屬的段落,S03
+reactions/phone_raise.csv,slide_id,id,no,,,peak_t_sec 當下投影幕上的頁,S03-P011
+reactions/phone_raise.csv,sentence_id,id,no,,,peak_t_sec 當下正在說或最近一句已說完的句子,T00043
+reactions/phone_raise.csv,raised_ratio_peak,number,yes,0–1,,事件內加權 raised_ratio 的最大值；是面積比例，不是人數，分不出手或手機,0.14
+reactions/phone_raise.csv,raised_ratio_mean,number,yes,0–1,,事件內加權 raised_ratio 的平均,0.09
+reactions/phone_raise.csv,coverage,string,yes,,,參與計算的鏡頭與區，格式 camera:zone;zone；畫面不可用的區不列入,R:Z1;Z2
 reactions/stage_polls.csv,poll_id,id,yes,,,PL 加三位數，依 t_sec 排序,PL004
 reactions/stage_polls.csv,segment_id,id,yes,,,所屬段落,S03
 reactions/stage_polls.csv,speaker_id,string,yes,,,提問的講者,garry-tan
@@ -113,12 +129,12 @@ reactions/stage_polls.csv,t_sec,number,yes,s,,該句的 end_t_sec，回應窗由
 reactions/stage_polls.csv,clock,datetime,yes,,,t_sec 換算的台北時間,2026-11-12T12:36:50+08:00
 reactions/stage_polls.csv,response_type,enum,yes,,raise_hand|applause|shout|other,講者要求的回應方式,raise_hand
 reactions/stage_polls.csv,window_sec,number,yes,s,,計算回應的時間窗長度，等於 stage_poll_window_sec,8
-reactions/stage_polls.csv,raised_ratio_peak,number,conditional,0–1,,回應窗內每一秒先把各區 raised_ratio 依區面積加權平均，再取最大值；只是在場組成的代理指標，不是人數比例；response_type 不是 raise_hand 時留空,0.31
+reactions/stage_polls.csv,raised_ratio_peak,number,conditional,0–1,,回應窗內每秒的區面積加權 raised_ratio（計法同 reactions/phone_raise.csv）的最大值；只是在場組成的代理指標，不是人數比例；response_type 不是 raise_hand 時留空,0.31
 reactions/stage_polls.csv,coverage,string,yes,,,參與計算的鏡頭與區，格式 camera:zone;zone,R:Z1;Z2
 reactions/stage_polls.csv,note,string,no,,,其他說明,
 reactions/peaks.csv,peak_id,id,yes,,,PK 加三位數，依 start_t_sec 排序,PK021
 reactions/peaks.csv,rank,integer,yes,,,依 score 由高到低排名，1 最高；同分以 start_t_sec 早者在前,3
-reactions/peaks.csv,start_t_sec,number,yes,s,,高峰窗起點：把非禮貌掌聲、笑聲事件與 raised_ratio 超過 raise_peak_threshold 的連續秒，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗,1544.0
+reactions/peaks.csv,start_t_sec,number,yes,s,,高峰窗起點：把非禮貌掌聲、笑聲事件與舉起來事件中，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗,1544.0
 reactions/peaks.csv,end_t_sec,number,yes,s,,高峰窗終點,1552.0
 reactions/peaks.csv,peak_t_sec,number,yes,s,,窗內各訊號正規化後加總最大的一秒,1546.0
 reactions/peaks.csv,peak_clock,datetime,yes,,,peak_t_sec 換算的台北時間,2026-11-12T12:25:46+08:00
@@ -128,10 +144,11 @@ reactions/peaks.csv,slide_id,id,no,,,peak_t_sec 當下投影幕上的頁,S03-P01
 reactions/peaks.csv,sentence_id,id,no,,,peak_t_sec 當下正在說或最近一句已說完的句子,T00043
 reactions/peaks.csv,pre3s_sentence_ids,id_list,no,,,與 [start_t_sec−3; start_t_sec) 有重疊的句子代號，以 ; 分隔,T00042;T00043
 reactions/peaks.csv,pre3s_text,string,no,,,上述句子的 text 依序以空格接起來,The best founders I know talk to users every week.
+reactions/peaks.csv,pre3s_action,string,no,,,高峰前三秒講者做了什麼動作（換頁、停頓、手勢、走位、請台下回應），由設備 A 的影片或現場筆記人工記下；看不到留空,換到下一頁並停頓兩秒
 reactions/peaks.csv,signals,id_list,yes,,applause|laughter|raise,窗內出現的訊號，以 ; 分隔,laughter;raise
 reactions/peaks.csv,applause_sec,number,yes,s,,窗內非禮貌掌聲的秒數,0
 reactions/peaks.csv,laughter_sec,number,yes,s,,窗內笑聲的秒數,3.8
-reactions/peaks.csv,raised_ratio_max,number,no,0–1,,窗內區面積加權 raised_ratio 的最大值；沒有影像時留空,0.14
+reactions/peaks.csv,raised_ratio_max,number,no,0–1,,窗內 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有影像時留空,0.14
 reactions/peaks.csv,score,number,yes,,,w_applause×applause_sec + w_laughter×laughter_sec + w_raise×raised_ratio_max×60；權重見 schema/parameters.csv；窗內任一句 is_sensitive 為 true 的高峰不收錄,12.2
 reactions/timeline_minute.csv,minute_idx,integer,yes,,,從 T0 起第幾分鐘，T0 以前為負數,25
 reactions/timeline_minute.csv,start_t_sec,number,yes,s,,這一分鐘的起點，等於 minute_idx×60,1500
@@ -140,13 +157,14 @@ reactions/timeline_minute.csv,segment_id,id,no,,,這一分鐘內佔最多秒數�
 reactions/timeline_minute.csv,speaker_id,string,no,,,這一分鐘內說最多秒數的說話者,garry-tan
 reactions/timeline_minute.csv,slide_ids,id_list,no,,,這一分鐘內出現過的簡報頁，以 ; 分隔，依出現順序,S03-P011;S03-P012
 reactions/timeline_minute.csv,page_title,string,no,,,這一分鐘內顯示最久那一頁的 page_title,Talk to users
+reactions/timeline_minute.csv,transcript_text,string,no,,,start_t_sec 落在這一分鐘的句子 text 依序以空格接起來；is_sensitive 的句子以「[不公開]」代替；這一分鐘沒有句子時留空,The best founders I know talk to users every week. ...
 reactions/timeline_minute.csv,sentence_count,integer,yes,,,start_t_sec 落在這一分鐘的句子數,14
 reactions/timeline_minute.csv,char_count,integer,yes,chars,,上述句子的字數總和，計法同 content/segment_function.csv,212
 reactions/timeline_minute.csv,applause_sec,number,yes,s,,與這一分鐘重疊的非禮貌掌聲秒數,0
 reactions/timeline_minute.csv,polite_applause_sec,number,yes,s,,與這一分鐘重疊的禮貌掌聲秒數,0
 reactions/timeline_minute.csv,laughter_sec,number,yes,s,,與這一分鐘重疊的笑聲秒數,3.8
 reactions/timeline_minute.csv,silence_sec,number,yes,s,,與這一分鐘重疊的全場安靜秒數,0
-reactions/timeline_minute.csv,raised_ratio_max,number,no,0–1,,這一分鐘內區面積加權 raised_ratio 的最大值,0.14
+reactions/timeline_minute.csv,raised_ratio_max,number,no,0–1,,與這一分鐘重疊的 reactions/phone_raise.csv 事件 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空,0.14
 reactions/timeline_minute.csv,occupied_ratio,number,no,0–1,,presence/presence_minute.csv 各區 occupied_ratio 依區面積加權的平均,0.86
 reactions/timeline_minute.csv,standing_ratio,number,no,0–1,,presence/presence_minute.csv 各區 standing_ratio 依區面積加權的平均,0.02
 reactions/timeline_minute.csv,door_in,integer,no,,,presence/presence_minute.csv 各區 door_in 加總,3
@@ -173,7 +191,8 @@ presence/fill_order.csv,fill_80_clock,datetime,no,,,fill_80_t_sec 換算的台�
 presence/fill_order.csv,fill_rank,integer,yes,,1|2|3,依 fill_80_t_sec 先後排名；未達八成的排在最後,1
 after_talk/crowd_after_talk.csv,segment_id,id,yes,,,講者所在的段落,S03
 after_talk/crowd_after_talk.csv,speaker_id,string,yes,,,被圍住的講者,garry-tan
-after_talk/crowd_after_talk.csv,start_t_sec,number,yes,s,,講者離開講台的時間,3330.0
+after_talk/crowd_after_talk.csv,stage_exit_t_sec,number,yes,s,,講者離開講台的時間,3330.0
+after_talk/crowd_after_talk.csv,start_t_sec,number,yes,s,,圍住開始：講者下台後，圈內人數第一次達到 crowd_min_people 的時間,3342.0
 after_talk/crowd_after_talk.csv,end_t_sec,number,yes,s,,講者離開該區，或圈內人數少於 crowd_min_people 持續 30 秒的時間,4110.0
 after_talk/crowd_after_talk.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:55:30+08:00
 after_talk/crowd_after_talk.csv,duration_sec,number,yes,s,,end_t_sec 減 start_t_sec,780
@@ -199,19 +218,22 @@ questions/onsite_qa.csv,category,enum,yes,,fundraising|product|team|market|yc_ap
 questions/onsite_qa.csv,is_sensitive,boolean,yes,,true|false,問題或回答任一句 is_sensitive 為 true 時為 true；true 時 question_text 改為「[不公開]」,false
 questions/pre_event.csv,pre_q_id,id,yes,,,PQ 加四位數，依收到時間排序,PQ0015
 questions/pre_event.csv,target,string,yes,,speaker_id|organizer|any,想問的對象：講者填 speaker_id；問主辦方填 organizer；不限對象填 any,garry-tan
-questions/pre_event.csv,question_text,string,yes,,,把問題改寫成一句，移除提問者的姓名、公司與其他身分線索,YC 怎麼看台灣團隊的申請？
+questions/pre_event.csv,question_text,string,conditional,,,把問題改寫成一句，移除提問者的姓名、公司與其他身分線索；consent_public 為 false 時留空，只保留對象與類別供統計,YC 怎麼看台灣團隊的申請？
 questions/pre_event.csv,category,enum,yes,,fundraising|product|team|market|yc_application|ai|hardware|career|taiwan|personal_advice|other,問題主題,yc_application
 questions/pre_event.csv,source,enum,yes,,coffee_morning_form|luma_form|hf_access_form|qr_card,收到的管道,coffee_morning_form
+questions/pre_event.csv,consent_public,boolean,yes,,true|false,提問者是否勾選同意問題內容公開,true
 questions/pre_event.csv,submitted_date,date,yes,,,收到的日期，只到日,2026-11-08
 questions/pre_event.csv,answered_status,enum,yes,,answered|partially_answered|not_answered|not_checked,當天是否被回答：answered 台上有句子直接回應問題核心；partially_answered 只回應一部分；not_answered 逐字稿全部比對後沒有；not_checked 尚未比對,not_checked
 questions/pre_event.csv,matched_qa_id,id,no,,,被回答時對應的 questions/onsite_qa.csv 的 qa_id；不是在 Q&A 回答時留空,
 questions/pre_event.csv,matched_sentence_ids,id_list,no,,,回應這個問題的句子代號，以 ; 分隔,
 questions/unasked.csv,unasked_id,id,yes,,,UQ 加四位數,UQ0032
 questions/unasked.csv,target,string,yes,,speaker_id|organizer|any,想問的對象，同 questions/pre_event.csv,diana-hu
-questions/unasked.csv,question_text,string,yes,,,把問題改寫成一句，移除提問者的姓名、公司與其他身分線索,怎麼判斷一個 AI 產品是功能還是公司？
+questions/unasked.csv,question_text,string,conditional,,,把問題改寫成一句，移除提問者的姓名、公司與其他身分線索；consent_public 為 false 時留空，只保留對象與類別供統計,怎麼判斷一個 AI 產品是功能還是公司？
 questions/unasked.csv,category,enum,yes,,fundraising|product|team|market|yc_application|ai|hardware|career|taiwan|personal_advice|other,問題主題,ai
 questions/unasked.csv,source,enum,yes,,coffee_morning_form|qr_card|interview|hf_access_form,收到的管道,qr_card
+questions/unasked.csv,consent_public,boolean,yes,,true|false,提問者是否勾選同意問題內容公開,true
 questions/unasked.csv,collected_phase,enum,yes,,before|during|after,在活動前、活動中或活動後收到,during
+questions/unasked.csv,collected_date,date,yes,,,收到的日期，只到日,2026-11-12
 questions/unasked.csv,answered_status,enum,yes,,answered|partially_answered|not_answered|not_checked,是否其實在台上被回答了，定義同 questions/pre_event.csv,not_answered
 questions/unasked.csv,matched_sentence_ids,id_list,no,,,回應這個問題的句子代號，以 ; 分隔,
 questions/remembered_moments.csv,response_id,id,yes,,,RM 加四位數,RM0009
@@ -225,9 +247,10 @@ questions/remembered_moments.csv,response_date,date,yes,,,收到回覆的日期,
 startups/topics.csv,topic_id,id,yes,,,ST 加四位數,ST0044
 startups/topics.csv,category,enum,yes,,ai_infra|ai_application|devtools|b2b_saas|fintech|health|climate|consumer|education|hardware|robotics|other,題目類別,hardware
 startups/topics.csv,stage,enum,yes,,idea|prototype|paying_customers|funded|other,目前階段：還在想、做出原型、有付費客戶、已募資,prototype
-startups/topics.csv,one_liner,string,no,,,改寫成一句的題目描述，不含公司名、產品名與人名；報名者沒勾選同意公開時留空,用感測器幫小型工廠預測設備故障
+startups/topics.csv,one_liner,string,conditional,,,改寫成一句的題目描述，不含公司名、產品名與人名；consent_public 為 true 時必填，false 時留空,用感測器幫小型工廠預測設備故障
 startups/topics.csv,is_hardware,boolean,yes,,true|false,產品是否包含自行設計或製造的硬體,true
 startups/topics.csv,source,enum,yes,,coffee_morning_form|hf_access_form|interview,收到的管道,coffee_morning_form
+startups/topics.csv,consent_public,boolean,yes,,true|false,報名者是否勾選同意題目描述公開,true
 startups/topics.csv,collected_date,date,yes,,,收到的日期,2026-11-07
 speakers/profiles.csv,speaker_id,id,yes,,,講者代號：英文名與姓的小寫，以 - 連接,garry-tan
 speakers/profiles.csv,display_name,string,yes,,,講者公開使用的姓名,Garry Tan
@@ -235,6 +258,7 @@ speakers/profiles.csv,role_title,string,yes,,,現職職稱，照本人公開寫�
 speakers/profiles.csv,organization,string,yes,,,現職單位,Y Combinator
 speakers/profiles.csv,yc_relation,enum,yes,,partner|staff|alumni_founder|guest|other,與 YC 的關係：partner 現任合夥人；staff 其他 YC 員工；alumni_founder YC 校友創辦人；guest 外部講者,partner
 speakers/profiles.csv,yc_batch,string,no,,,YC 梯次，例如 W12；不是校友留空,
+speakers/profiles.csv,notable_investments,string,no,,,投資或輔導過的公司，以 ; 分隔；只列本人或 YC 公開的資料；沒有留空,Coinbase;Instacart
 speakers/profiles.csv,bio_summary,string,yes,,,我們寫的兩句以內簡介，只根據 source_urls 的內容,【範例】YC 總裁暨執行長，曾共同創辦 Posterous
 speakers/profiles.csv,taiwan_connection,string,no,,,我們寫的一句：和台灣的公開連結；沒有就留空,
 speakers/profiles.csv,source_urls,url_list,yes,,,資料來源網址，以 ; 分隔；只用本人、本人公司或 YC 官網,https://www.ycombinator.com/people/garry-tan
@@ -256,6 +280,7 @@ speakers/new_vs_old.csv,past_source_url,url,conditional,,,過去講過時的出�
 speakers/new_vs_old.csv,past_source_type,enum,conditional,,self|company,出處類型；同上條件,self
 speakers/new_vs_old.csv,past_date,date,conditional,,,過去講的日期；同上條件,2025-04-12
 speakers/new_vs_old.csv,this_talk_status,enum,yes,,pending|repeated|updated|new_in_talk|contradicted|not_mentioned,這場的對照結果：pending 活動前尚未對照；repeated 重複講；updated 同一觀點有新內容；new_in_talk 過去沒講過；contradicted 與過去相反；not_mentioned 這場沒提,pending
+speakers/new_vs_old.csv,new_in_talk_summary,string,conditional,,,我們寫的一句：這場比過去多講了什麼；this_talk_status 為 updated 或 new_in_talk 時必填,【範例】新增了在台灣找硬體共同創辦人的建議
 speakers/new_vs_old.csv,matched_sentence_ids,id_list,no,,,這場對應的句子代號，以 ; 分隔,
 speakers/new_vs_old.csv,note,string,no,,,其他說明,
 social/speakers_yc_posts.csv,post_id,id,yes,,,YP 加五位數，依 posted_at 排序,YP00031
@@ -286,18 +311,23 @@ online/posts.csv,posted_at,datetime,yes,,,發文時間，換算為台北時間,2
 online/posts.csv,hours_after_end,number,yes,h,,posted_at 距散場時間的小時數；散場前為負數,1.37
 online/posts.csv,summary_zh,string,yes,,,我們寫的一句摘要，不引用原文,【範例】分享 Garry 講使用者訪談的那一頁
 online/posts.csv,quoted_sentence_ids,id_list,no,,,貼文引用到的句子代號，以 ; 分隔,T00043
+online/posts.csv,quoted_slide_ids,id_list,no,,,貼文引用或拍到的簡報頁，以 ; 分隔,S03-P011
 online/posts.csv,likes,integer,no,,,抓取當下的按讚數,
 online/posts.csv,reposts,integer,no,,,抓取當下的轉發或分享數,
 online/posts.csv,comments,integer,no,,,抓取當下的留言數,
 online/posts.csv,retrieved_at,datetime,yes,,,抓取時間,2026-11-14T10:00:00+08:00
 online/search_lift.csv,mention_id,id,yes,,,第一次提到的 content/tool_mentions.csv mention_id,TM0012
 online/search_lift.csv,normalized_name,string,yes,,,查詢的詞，同 content/tool_mentions.csv,Cursor
+online/search_lift.csv,mention_t_sec,number,yes,s,,第一次提到的時間，同該 mention 的 t_sec,5133.0
 online/search_lift.csv,geo,string,yes,,,Google Trends 地區代碼,TW
-online/search_lift.csv,granularity,enum,yes,,hourly|daily,Google Trends 資料粒度,hourly
-online/search_lift.csv,baseline_index,number,yes,,,活動前 7 天同一時段的平均指數,12
-online/search_lift.csv,window_peak_index,number,yes,,,第一次提到後 48 小時內的最大指數,31
-online/search_lift.csv,lift_ratio,number,conditional,,,window_peak_index 除以 baseline_index；baseline_index 為 0 時留空,2.58
+online/search_lift.csv,granularity,enum,yes,,hourly|daily,Google Trends 資料粒度；比較前後一小時時必須是 hourly,hourly
+online/search_lift.csv,index_1h_before,number,yes,,,提到前一小時的 Google Trends 指數,8
+online/search_lift.csv,index_1h_after,number,yes,,,提到後一小時的 Google Trends 指數,19
+online/search_lift.csv,baseline_index,number,no,,,活動前 7 天同一時段的平均指數,12
+online/search_lift.csv,window_peak_index,number,no,,,第一次提到後 48 小時內的最大指數,31
+online/search_lift.csv,lift_ratio,number,conditional,,,index_1h_after 除以 index_1h_before；index_1h_before 為 0 時留空,2.38
 online/search_lift.csv,retrieved_at,datetime,yes,,,抓取時間,2026-11-15T10:00:00+08:00
+online/search_lift.csv,source_url,url,yes,,,Google Trends 查詢網址,https://trends.google.com/trends/explore?geo=TW&q=Cursor
 side_events/luma.csv,event_id,id,yes,,,LE 加三位數,LE004
 side_events/luma.csv,title,string,yes,,,活動名稱,【範例】YC Coffee Morning
 side_events/luma.csv,host,string,yes,,,主辦單位,【範例】Sensible Intelligence Lab
@@ -341,6 +371,7 @@ derivatives/works.csv,url,url,yes,,,作品網址,https://example.com/work/1
 derivatives/works.csv,ai_tools,string,no,,,使用的 AI 工具，以 ; 分隔,Claude;Cursor
 derivatives/works.csv,time_spent_hours,number,no,h,,創作者自報的製作時數,3
 derivatives/works.csv,datapack_version,enum,yes,,v0.5|v1|v1.1|v2,使用的資料包版本,v1
+derivatives/works.csv,files_used,id_list,no,,,用到的資料包檔案路徑，以 ; 分隔,reactions/peaks.csv;content/transcript.csv
 derivatives/works.csv,submitted_via,enum,yes,,hf_pull_request|email|upload,回報管道,hf_pull_request
 derivatives/works.csv,submitted_date,date,yes,,,回報日期,2026-11-14
 derivatives/works.csv,license,string,no,,,作品授權，例如 CC BY 4.0,

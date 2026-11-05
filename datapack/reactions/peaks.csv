@@ -1,1 +1,1 @@
-peak_id,rank,start_t_sec,end_t_sec,peak_t_sec,peak_clock,segment_id,speaker_id,slide_id,sentence_id,pre3s_sentence_ids,pre3s_text,signals,applause_sec,laughter_sec,raised_ratio_max,score
+peak_id,rank,start_t_sec,end_t_sec,peak_t_sec,peak_clock,segment_id,speaker_id,slide_id,sentence_id,pre3s_sentence_ids,pre3s_text,pre3s_action,signals,applause_sec,laughter_sec,raised_ratio_max,score

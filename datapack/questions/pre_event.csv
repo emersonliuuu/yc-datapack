@@ -1,1 +1,1 @@
-pre_q_id,target,question_text,category,source,submitted_date,answered_status,matched_qa_id,matched_sentence_ids
+pre_q_id,target,question_text,category,source,consent_public,submitted_date,answered_status,matched_qa_id,matched_sentence_ids

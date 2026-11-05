@@ -8,7 +8,8 @@ silence_min_sec,TBD,s,reactions/sound_events.csv,全場安靜至少持續的秒�
 polite_window_sec,TBD,s,reactions/sound_events.csv,段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲,to_test
 raise_max_sec,TBD,s,reactions/phone_raise.csv,頭頂線以上的變化持續不超過這個秒數才算「舉起來」,to_test
 stand_min_sec,TBD,s,presence/presence_minute.csv,頭頂線以上的變化持續達到這個秒數才算「站著聽」,to_test
-raise_peak_threshold,TBD,0–1,reactions/peaks.csv,區面積加權 raised_ratio 達到這個值的秒才進高峰候選,to_test
+raise_event_threshold,TBD,0–1,reactions/phone_raise.csv,區面積加權 raised_ratio 達到這個值才算進入舉起來事件,to_test
+raise_event_min_sec,TBD,s,reactions/phone_raise.csv,舉起來事件短於這個秒數不收錄,to_test
 peak_merge_gap_sec,TBD,s,reactions/peaks.csv,高峰候選間隔小於這個秒數就合併成同一窗,to_test
 pre_peak_window_sec,3,s,reactions/peaks.csv,高峰前要看的秒數（Franck 定為三秒）,fixed
 w_applause,TBD,,reactions/peaks.csv,score 中掌聲秒數的權重,to_decide

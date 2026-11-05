@@ -1,1 +1,1 @@
-post_id,platform,account_type,account_handle,url,posted_at,hours_after_end,summary_zh,quoted_sentence_ids,likes,reposts,comments,retrieved_at
+post_id,platform,account_type,account_handle,url,posted_at,hours_after_end,summary_zh,quoted_sentence_ids,quoted_slide_ids,likes,reposts,comments,retrieved_at

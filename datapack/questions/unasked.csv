@@ -1,1 +1,1 @@
-unasked_id,target,question_text,category,source,collected_phase,answered_status,matched_sentence_ids
+unasked_id,target,question_text,category,source,consent_public,collected_phase,collected_date,answered_status,matched_sentence_ids

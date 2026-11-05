@@ -64,7 +64,8 @@ datapack/                     資料包本體（發布時整個資料夾打包�
 
 ## 待確認
 
-- **Franck 架構版 zip 的欄位**：這版欄位依收集項目 database、DOC-791 內文與 DOC-793 起草，還沒和 `datapack_yc_taipei_1112_v0.zip` 逐欄比對。
+- **與 v0 刻意不同的地方**：人數改為面積比例、舉起來改為一次事件一列、每分鐘總表放原句不摘要。對照與原因見 [`schema/franck_v0_mapping.md`](schema/franck_v0_mapping.md)，要和 Franck 確認。
+- **BOM**：v0 的 CSV 含 BOM，這版不含；若創作者用 Excel 直接開會亂碼，再改回含 BOM。
 - **不適合二創的句子**：目前定為 `text` 改成「[不公開]」，只保留時間；要和 Franck、David 確認是否改為只標記、保留原文。
 - **`manifest.csv` 的版本**：DOC-791 沒有標，暫定 v0.5。
 - **參數**：`schema/parameters.csv` 中狀態為 `to_test`、`to_decide` 的門檻與權重，測試或決定後回填。

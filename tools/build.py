@@ -63,6 +63,11 @@ def check(files, by_file):
     for f in files:
         if f["format"] == "csv" and f["path"] not in by_file:
             errors.append(f"{f['path']} 是 CSV，但 fields.csv 沒有欄位")
+    allowed_meta = {c["column"]: c["allowed_values"].split("|") for c in by_file.get("manifest.csv", []) if c["column"] in ("filled_by", "priority")}
+    for f in files:
+        for key, vals in allowed_meta.items():
+            if f[key] not in vals:
+                errors.append(f"files.csv {f['path']} 的 {key} 不在允許值：{f[key]}")
     for path, cols in by_file.items():
         seen = set()
         for c in cols:
@@ -113,10 +118,13 @@ def write_manifest(files, by_file):
             w.writerow({
                 "path": f["path"],
                 "title_zh": f["title_zh"],
+                "description": f["description"],
                 "version_added": f["version"],
                 "status": "pending",
                 "row_count": "",
                 "source_devices": f["source_devices"],
+                "filled_by": f["filled_by"],
+                "priority": f["priority"],
                 "method": "",
                 "updated_at": "",
                 "sha256": "",
@@ -158,11 +166,11 @@ def write_reference(files, by_file, params):
     lines.append("")
     lines.append("## 檔案總覽")
     lines.append("")
-    lines.append("| 檔案 | 中文名稱 | 版本 | 一列代表 | 主鍵 |")
-    lines.append("| --- | --- | --- | --- | --- |")
+    lines.append("| 檔案 | 中文名稱 | 版本 | 優先序 | 誰填 | 一列代表 | 主鍵 |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- |")
     for f in files:
         lines.append(
-            f"| `{f['path']}` | {f['title_zh']} | {f['version']} | {f['grain'] or '—'} | "
+            f"| `{f['path']}` | {f['title_zh']} | {f['version']} | {f['priority']} | {f['filled_by']} | {f['grain'] or '—'} | "
             f"{('`' + f['primary_key'] + '`') if f['primary_key'] else '—'} |"
         )
     lines.append("")
@@ -173,7 +181,7 @@ def write_reference(files, by_file, params):
         lines.append("")
         lines.append(f"{f['description']}。")
         lines.append("")
-        meta = [f"版本：{f['version']}", f"一列代表：{f['grain']}"]
+        meta = [f"版本：{f['version']}", f"優先序：{f['priority']}", f"誰填：{f['filled_by']}", f"一列代表：{f['grain']}"]
         if f["primary_key"]:
             meta.append(f"主鍵：`{f['primary_key']}`")
         if f["source_devices"]:
