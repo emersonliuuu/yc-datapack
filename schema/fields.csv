@@ -58,7 +58,7 @@ content/slide_changes.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北
 content/slide_changes.csv,dwell_sec,number,yes,s,,end_t_sec 減 start_t_sec,62.3
 content/slide_changes.csv,detect_method,enum,yes,,manual|visual_diff|deck_match,manual 人工標記；visual_diff 由投影畫面變化偵測；deck_match 與簡報檔逐頁比對,visual_diff
 content/slide_changes.csv,confidence,number,yes,0–1,,偵測信心；manual 填 1,0.97
-content/slide_changes.csv,camera,id,yes,,A|R,拍到這次換頁的設備代號；R 是備援,A
+content/slide_changes.csv,camera,id,yes,,A|X5,拍到這次換頁的設備代號；X5 是備援,A
 content/segment_function.csv,block_id,id,yes,,,功能段落代號：F 加四位數，依 start_t_sec 排序,F0031
 content/segment_function.csv,segment_id,id,yes,,,所屬段落，對應 content/agenda.csv,S03
 content/segment_function.csv,speaker_id,string,yes,,speaker_id|host|audience|unknown,這個功能段落的說話者；同 content/transcript.csv,garry-tan
@@ -73,7 +73,7 @@ content/segment_function.csv,labels_agree,boolean,conditional,,true|false,functi
 content/segment_function.csv,char_count,integer,yes,chars,,段落內所有句子 text 的字數：中文一字算 1，英文一個單字算 1，數字串算 1，不含標點與空白,186
 content/segment_function.csv,char_share,number,yes,0–1,,char_count 除以同一 segment_id 所有功能段落 char_count 的總和,0.083
 content/segment_function.csv,peak_count,integer,yes,,,reactions/peaks.csv 中 peak_t_sec 落在本段起訖內的高峰數,1
-content/segment_function.csv,raised_ratio_max,number,no,0–1,,本段期間 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空,0.12
+content/segment_function.csv,phone_count_max,integer,no,people,,本段期間 reactions/phone_raise.csv 事件 phone_count_peak 的最大值；沒有事件填 0；沒有影像時留空,18
 content/taiwan_mentions.csv,mention_id,id,yes,,,TW 加四位數，依 t_sec 排序,TW0003
 content/taiwan_mentions.csv,sentence_id,id,yes,,,提到的句子，對應 content/transcript.csv,T00208
 content/taiwan_mentions.csv,segment_id,id,yes,,,所屬段落,S05
@@ -96,7 +96,7 @@ content/tool_mentions.csv,official_url,url,no,,,官方網站或 repo；查不到
 content/tool_mentions.csv,is_yc_company,boolean,no,,true|false,依 YC 官方公司目錄判定；查不到留空,false
 reactions/sound_events.csv,event_id,id,yes,,,SE 加五位數，依 start_t_sec 排序,SE00118
 reactions/sound_events.csv,event,enum,yes,,applause|laughter|silence|chatter,applause 掌聲；laughter 笑聲；silence 全場安靜：段落進行中講台與台下都沒有語音、掌聲與笑聲，且音量低於 silence_level_db 連續 silence_min_sec 以上；chatter 台下討論聲：台下多人同時說話、不是講台的語音,laughter
-reactions/sound_events.csv,mic,id,yes,,B|C|A1,判定這個事件的收音設備代號；同一事件多支收到時填訊號最強的一支,B
+reactions/sound_events.csv,mic,id,yes,,B|C|A1|X5,判定這個事件的收音設備代號；同一事件多支收到時填訊號最強的一支,B
 reactions/sound_events.csv,start_t_sec,number,yes,s,,第一個分數超過 event_score_threshold 的分析窗起點,1544.0
 reactions/sound_events.csv,end_t_sec,number,yes,s,,最後一個超過門檻的分析窗終點；間隔小於 event_merge_gap_sec 的同類事件合併,1547.8
 reactions/sound_events.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:44+08:00
@@ -108,18 +108,34 @@ reactions/sound_events.csv,is_polite,boolean,yes,,true|false,禮貌性掌聲：e
 reactions/sound_events.csv,segment_id,id,yes,,,start_t_sec 所屬的段落,S03
 reactions/sound_events.csv,sentence_id,id,no,,,start_t_sec 當下正在說或最近一句已說完的句子,T00043
 reactions/sound_events.csv,slide_id,id,no,,,start_t_sec 當下投影幕上的頁,S03-P011
-reactions/phone_raise.csv,raise_id,id,yes,,,RS 加五位數，依 start_t_sec 排序,RS00012
-reactions/phone_raise.csv,start_t_sec,number,yes,s,,事件起點：每秒的區面積加權 raised_ratio 第一次達到 raise_event_threshold 的秒。各區 raised_ratio 是該區頭頂線以上判定區中，相對座位基準畫面出現變化、且持續不超過 raise_max_sec 秒的面積比例；加權是依各區在畫面中的座位面積,1544
-reactions/phone_raise.csv,end_t_sec,number,yes,s,,事件終點：加權 raised_ratio 回到門檻以下的秒；間隔小於 event_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄,1551
+reactions/phone_raise.csv,raise_id,id,yes,,,PH 加五位數，依 start_t_sec 排序,PH00012
+reactions/phone_raise.csv,start_t_sec,number,yes,s,,事件起點：同一秒舉手機的人數第一次達到 raise_event_min_people 的秒。舉手機：畫面中偵測到手機、手機高於持有者的肩膀、且持續 phone_up_min_sec 秒以上；拍照、錄影與舉起手機看都算,1544
+reactions/phone_raise.csv,end_t_sec,number,yes,s,,事件終點：舉手機人數回到 raise_event_min_people 以下的秒；間隔小於 raise_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄,1551
 reactions/phone_raise.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:44+08:00
 reactions/phone_raise.csv,duration_sec,number,yes,s,,end_t_sec 減 start_t_sec,7
-reactions/phone_raise.csv,peak_t_sec,number,yes,s,,事件內加權 raised_ratio 最大的秒,1546
+reactions/phone_raise.csv,peak_t_sec,number,yes,s,,事件內同一秒舉手機人數最多的秒；同數取最早,1546
 reactions/phone_raise.csv,segment_id,id,yes,,,peak_t_sec 所屬的段落,S03
 reactions/phone_raise.csv,slide_id,id,no,,,peak_t_sec 當下投影幕上的頁,S03-P011
 reactions/phone_raise.csv,sentence_id,id,no,,,peak_t_sec 當下正在說或最近一句已說完的句子,T00043
-reactions/phone_raise.csv,raised_ratio_peak,number,yes,0–1,,事件內加權 raised_ratio 的最大值；是面積比例，不是人數，分不出手或手機,0.14
-reactions/phone_raise.csv,raised_ratio_mean,number,yes,0–1,,事件內加權 raised_ratio 的平均,0.09
-reactions/phone_raise.csv,coverage,string,yes,,,參與計算的鏡頭與區，格式 camera:zone;zone；畫面不可用的區不列入,R:Z1;Z2
+reactions/phone_raise.csv,phone_count_peak,integer,yes,people,,估計人數：peak_t_sec 那一秒舉手機的人數；被擋住的人數不到，是下限,18
+reactions/phone_raise.csv,visible_count,integer,yes,people,,peak_t_sec 那一秒 coverage_zones 內偵測到的人數,212
+reactions/phone_raise.csv,phone_share_peak,number,yes,0–1,,占可見人數比例：phone_count_peak 除以 visible_count,0.085
+reactions/phone_raise.csv,camera,id,yes,,X5,偵測用的設備代號,X5
+reactions/phone_raise.csv,coverage_zones,id_list,yes,,,peak_t_sec 當下畫面可用、有算進來的座位區代號，以 ; 分隔；代號見 docs/venue_map.md,Z1;Z2;Z3
+reactions/hand_raise.csv,raise_id,id,yes,,,HR 加五位數，依 start_t_sec 排序,HR00004
+reactions/hand_raise.csv,start_t_sec,number,yes,s,,事件起點：同一秒舉手的人數第一次達到 raise_event_min_people 的秒。舉手：手腕高於頭頂、持續 hand_raise_min_sec 秒以上；手上拿著手機的算舉手機，不算舉手,1544
+reactions/hand_raise.csv,end_t_sec,number,yes,s,,事件終點：舉手人數回到 raise_event_min_people 以下的秒；間隔小於 raise_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄,1551
+reactions/hand_raise.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:44+08:00
+reactions/hand_raise.csv,duration_sec,number,yes,s,,end_t_sec 減 start_t_sec,7
+reactions/hand_raise.csv,peak_t_sec,number,yes,s,,事件內同一秒舉手人數最多的秒；同數取最早,1546
+reactions/hand_raise.csv,segment_id,id,yes,,,peak_t_sec 所屬的段落,S03
+reactions/hand_raise.csv,slide_id,id,no,,,peak_t_sec 當下投影幕上的頁,S03-P011
+reactions/hand_raise.csv,sentence_id,id,no,,,peak_t_sec 當下正在說或最近一句已說完的句子,T00043
+reactions/hand_raise.csv,hand_count_peak,integer,yes,people,,估計人數：peak_t_sec 那一秒舉手的人數；被擋住的人數不到，是下限,64
+reactions/hand_raise.csv,visible_count,integer,yes,people,,peak_t_sec 那一秒 coverage_zones 內偵測到的人數,205
+reactions/hand_raise.csv,hand_share_peak,number,yes,0–1,,占可見人數比例：hand_count_peak 除以 visible_count,0.312
+reactions/hand_raise.csv,camera,id,yes,,X5,偵測用的設備代號,X5
+reactions/hand_raise.csv,coverage_zones,id_list,yes,,,peak_t_sec 當下畫面可用、有算進來的座位區代號，以 ; 分隔；代號見 docs/venue_map.md,Z1;Z2;Z3
 reactions/stage_polls.csv,poll_id,id,yes,,,PL 加三位數，依 t_sec 排序,PL004
 reactions/stage_polls.csv,segment_id,id,yes,,,所屬段落,S03
 reactions/stage_polls.csv,speaker_id,string,yes,,,提問的講者,garry-tan
@@ -129,12 +145,15 @@ reactions/stage_polls.csv,t_sec,number,yes,s,,該句的 end_t_sec，回應窗由
 reactions/stage_polls.csv,clock,datetime,yes,,,t_sec 換算的台北時間,2026-11-12T12:36:50+08:00
 reactions/stage_polls.csv,response_type,enum,yes,,raise_hand|applause|shout|other,講者要求的回應方式,raise_hand
 reactions/stage_polls.csv,window_sec,number,yes,s,,計算回應的時間窗長度，等於 stage_poll_window_sec,8
-reactions/stage_polls.csv,raised_ratio_peak,number,conditional,0–1,,回應窗內每秒的區面積加權 raised_ratio（計法同 reactions/phone_raise.csv）的最大值；只是在場組成的代理指標，不是人數比例；response_type 不是 raise_hand 時留空,0.31
-reactions/stage_polls.csv,coverage,string,yes,,,參與計算的鏡頭與區，格式 camera:zone;zone,R:Z1;Z2
+reactions/stage_polls.csv,hand_count_peak,integer,conditional,people,,回應窗內同一秒舉手人數的最大值（舉手定義同 reactions/hand_raise.csv）；response_type 不是 raise_hand 時留空,64
+reactions/stage_polls.csv,visible_count,integer,conditional,people,,hand_count_peak 那一秒 coverage_zones 內偵測到的人數,205
+reactions/stage_polls.csv,hand_share_peak,number,conditional,0–1,,hand_count_peak 除以 visible_count；只代表看得到的座位區,0.312
+reactions/stage_polls.csv,camera,id,yes,,X5,偵測用的設備代號,X5
+reactions/stage_polls.csv,coverage_zones,id_list,yes,,,畫面可用、有算進來的座位區代號，以 ; 分隔,Z1;Z2;Z3
 reactions/stage_polls.csv,note,string,no,,,其他說明,
 reactions/peaks.csv,peak_id,id,yes,,,PK 加三位數，依 start_t_sec 排序,PK021
 reactions/peaks.csv,rank,integer,yes,,,依 score 由高到低排名，1 最高；同分以 start_t_sec 早者在前,3
-reactions/peaks.csv,start_t_sec,number,yes,s,,高峰窗起點：把非禮貌掌聲、笑聲事件與舉起來事件中，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗,1544.0
+reactions/peaks.csv,start_t_sec,number,yes,s,,高峰窗起點：把非禮貌掌聲、笑聲事件與舉手機事件中，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗,1544.0
 reactions/peaks.csv,end_t_sec,number,yes,s,,高峰窗終點,1552.0
 reactions/peaks.csv,peak_t_sec,number,yes,s,,窗內各訊號正規化後加總最大的一秒,1546.0
 reactions/peaks.csv,peak_clock,datetime,yes,,,peak_t_sec 換算的台北時間,2026-11-12T12:25:46+08:00
@@ -145,11 +164,11 @@ reactions/peaks.csv,sentence_id,id,no,,,peak_t_sec 當下正在說或最近一�
 reactions/peaks.csv,pre3s_sentence_ids,id_list,no,,,與 [start_t_sec−3; start_t_sec) 有重疊的句子代號，以 ; 分隔,T00042;T00043
 reactions/peaks.csv,pre3s_text,string,no,,,上述句子的 text 依序以空格接起來,The best founders I know talk to users every week.
 reactions/peaks.csv,pre3s_action,string,no,,,高峰前三秒講者做了什麼動作（換頁、停頓、手勢、走位、請台下回應），由設備 A 的影片或現場筆記人工記下；看不到留空,換到下一頁並停頓兩秒
-reactions/peaks.csv,signals,id_list,yes,,applause|laughter|raise,窗內出現的訊號，以 ; 分隔,laughter;raise
+reactions/peaks.csv,signals,id_list,yes,,applause|laughter|phone,窗內出現的訊號，以 ; 分隔,laughter;phone
 reactions/peaks.csv,applause_sec,number,yes,s,,窗內非禮貌掌聲的秒數,0
 reactions/peaks.csv,laughter_sec,number,yes,s,,窗內笑聲的秒數,3.8
-reactions/peaks.csv,raised_ratio_max,number,no,0–1,,窗內 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有影像時留空,0.14
-reactions/peaks.csv,score,number,yes,,,w_applause×applause_sec + w_laughter×laughter_sec + w_raise×raised_ratio_max×60；權重見 schema/parameters.csv；窗內任一句 is_sensitive 為 true 的高峰不收錄,12.2
+reactions/peaks.csv,phone_count_max,integer,no,people,,窗內 reactions/phone_raise.csv 事件 phone_count_peak 的最大值；沒有舉手機事件填 0；沒有影像時留空,18
+reactions/peaks.csv,score,number,yes,,,w_applause×applause_sec + w_laughter×laughter_sec + w_phone×phone_count_max；權重見 schema/parameters.csv；窗內任一句 is_sensitive 為 true 的高峰不收錄,12.2
 reactions/timeline_minute.csv,minute_idx,integer,yes,,,從 T0 起第幾分鐘，T0 以前為負數,25
 reactions/timeline_minute.csv,start_t_sec,number,yes,s,,這一分鐘的起點，等於 minute_idx×60,1500
 reactions/timeline_minute.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:00+08:00
@@ -164,28 +183,29 @@ reactions/timeline_minute.csv,applause_sec,number,yes,s,,與這一分鐘重疊�
 reactions/timeline_minute.csv,polite_applause_sec,number,yes,s,,與這一分鐘重疊的禮貌掌聲秒數,0
 reactions/timeline_minute.csv,laughter_sec,number,yes,s,,與這一分鐘重疊的笑聲秒數,3.8
 reactions/timeline_minute.csv,silence_sec,number,yes,s,,與這一分鐘重疊的全場安靜秒數,0
-reactions/timeline_minute.csv,raised_ratio_max,number,no,0–1,,與這一分鐘重疊的 reactions/phone_raise.csv 事件 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空,0.14
-reactions/timeline_minute.csv,occupied_ratio,number,no,0–1,,presence/presence_minute.csv 各區 occupied_ratio 依區面積加權的平均,0.86
-reactions/timeline_minute.csv,standing_ratio,number,no,0–1,,presence/presence_minute.csv 各區 standing_ratio 依區面積加權的平均,0.02
-reactions/timeline_minute.csv,door_in,integer,no,,,presence/presence_minute.csv 各區 door_in 加總,3
-reactions/timeline_minute.csv,door_out,integer,no,,,presence/presence_minute.csv 各區 door_out 加總,1
+reactions/timeline_minute.csv,phone_count_max,integer,no,people,,與這一分鐘重疊的 reactions/phone_raise.csv 事件 phone_count_peak 最大值；沒有事件填 0；沒有影像時留空,18
+reactions/timeline_minute.csv,hand_count_max,integer,no,people,,與這一分鐘重疊的 reactions/hand_raise.csv 事件 hand_count_peak 最大值；沒有事件填 0；沒有影像時留空,0
+reactions/timeline_minute.csv,visible_count,integer,no,people,,可見人數：presence/presence_minute.csv 這一分鐘各區 visible_count 加總,212
+reactions/timeline_minute.csv,standing_count,integer,no,people,,站立人數：presence/presence_minute.csv 這一分鐘各區 standing_count 加總,4
+reactions/timeline_minute.csv,left_count,integer,no,people,,離席：presence/presence_minute.csv 這一分鐘各區 left_count 加總,3
+reactions/timeline_minute.csv,returned_count,integer,no,people,,回座：presence/presence_minute.csv 這一分鐘各區 returned_count 加總,1
 reactions/timeline_minute.csv,peak_ids,id_list,no,,,peak_t_sec 落在這一分鐘的高峰，以 ; 分隔,PK021
 presence/presence_minute.csv,minute_idx,integer,yes,,,從 T0 起第幾分鐘，T0 以前為負數,25
 presence/presence_minute.csv,start_t_sec,number,yes,s,,這一分鐘的起點,1500
 presence/presence_minute.csv,start_clock,datetime,yes,,,start_t_sec 換算的台北時間,2026-11-12T12:25:00+08:00
-presence/presence_minute.csv,camera,id,yes,,R|D1|D2,拍攝座位區的設備代號,R
+presence/presence_minute.csv,camera,id,yes,,X5,拍攝座位區的設備代號,X5
 presence/presence_minute.csv,zone,id,yes,,,座位區代號，範圍畫在 docs/venue_map.md,Z2
-presence/presence_minute.csv,occupied_ratio,number,conditional,0–1,,頭頂線以下的座位判定區中，與入場前最空的基準畫面相比被佔住的面積比例；取這一分鐘 valid 秒數的中位數；valid_sec 為 0 時留空,0.86
-presence/presence_minute.csv,standing_ratio,number,conditional,0–1,,頭頂線以上判定區中，連續被佔住 stand_min_sec 秒以上的面積比例；取這一分鐘的中位數,0.02
-presence/presence_minute.csv,aisle_motion,number,no,0–1,,走道區有移動的秒數佔 valid 秒數的比例；畫面沒涵蓋走道時留空,0.15
-presence/presence_minute.csv,door_in,integer,no,,,門口區往內移動的區塊數，是人數的下限；畫面沒涵蓋門口時留空,3
-presence/presence_minute.csv,door_out,integer,no,,,門口區往外移動的區塊數，是人數的下限；畫面沒涵蓋門口時留空,1
-presence/presence_minute.csv,valid_sec,integer,yes,s,,這一分鐘內 valid 為 true 的秒數（0–60）,60
+presence/presence_minute.csv,visible_count,integer,conditional,people,,可見人數：這一分鐘每秒在這一區偵測到的人數，取 valid 秒數的中位數；valid_sec 為 0 時留空,71
+presence/presence_minute.csv,seated_count,integer,conditional,people,,坐著的人數：visible_count 中判定為坐姿的人數，取中位數,68
+presence/presence_minute.csv,standing_count,integer,conditional,people,,站立人數：在這一區站著、且同一位置持續站立 stand_min_sec 秒以上的人數，取中位數；走動中的人不算,3
+presence/presence_minute.csv,left_count,integer,conditional,people,,離席：這一分鐘內從這一區座位起身、走出這一區的人數,2
+presence/presence_minute.csv,returned_count,integer,conditional,people,,回座：這一分鐘內從區外走進這一區並坐下的人數,1
+presence/presence_minute.csv,valid_sec,integer,yes,s,,這一分鐘內這一區畫面可用的秒數（0–60）；被遮住、鏡頭移動或過暗的秒不算,60
 presence/fill_order.csv,zone_group,enum,yes,,front|middle|back,座位區群組；各 zone 屬於哪一群寫在 docs/venue_map.md,front
-presence/fill_order.csv,camera,id,yes,,R|D1|D2,計算用的設備代號,D1
-presence/fill_order.csv,max_occupied_ratio,number,yes,0–1,,這一群全場 occupied_ratio（分鐘值）的最大值,0.97
-presence/fill_order.csv,fill_50_t_sec,number,no,s,,occupied_ratio 第一次達到 max_occupied_ratio 的 50% 的分鐘起點；入場前畫面拍不到時留空,-1200
-presence/fill_order.csv,fill_80_t_sec,number,no,s,,occupied_ratio 第一次達到 max_occupied_ratio 的 80% 的分鐘起點,-600
+presence/fill_order.csv,camera,id,yes,,X5,計算用的設備代號,X5
+presence/fill_order.csv,max_seated_count,integer,yes,people,,這一群各區 seated_count 加總後（分鐘值）的全場最大值,96
+presence/fill_order.csv,fill_50_t_sec,number,no,s,,這一群 seated_count 加總第一次達到 max_seated_count 50% 的分鐘起點；入場前畫面拍不到時留空,-1200
+presence/fill_order.csv,fill_80_t_sec,number,no,s,,這一群 seated_count 加總第一次達到 max_seated_count 80% 的分鐘起點,-600
 presence/fill_order.csv,fill_50_clock,datetime,no,,,fill_50_t_sec 換算的台北時間,2026-11-12T11:40:00+08:00
 presence/fill_order.csv,fill_80_clock,datetime,no,,,fill_80_t_sec 換算的台北時間,2026-11-12T11:50:00+08:00
 presence/fill_order.csv,fill_rank,integer,yes,,1|2|3,依 fill_80_t_sec 先後排名；未達八成的排在最後,1
@@ -341,7 +361,7 @@ side_events/luma.csv,is_ours,boolean,yes,,true|false,是否為我們辦的活動
 side_events/luma.csv,retrieved_at,datetime,yes,,,抓取時間,2026-11-12T23:00:00+08:00
 outside/entry_minute.csv,minute_idx,integer,yes,,,從 T0 起第幾分鐘，T0 以前為負數,-30
 outside/entry_minute.csv,start_clock,datetime,yes,,,這一分鐘的起點,2026-11-12T11:30:00+08:00
-outside/entry_minute.csv,camera,id,yes,,H|D1|D2,計數用的設備代號,H
+outside/entry_minute.csv,camera,id,yes,,H|X5,計數用的設備代號,H
 outside/entry_minute.csv,entering,integer,yes,people,,這一分鐘越過門口線往內的人數,18
 outside/entry_minute.csv,exiting,integer,yes,people,,這一分鐘越過門口線往外的人數,0
 outside/entry_minute.csv,method,enum,yes,,manual_tally|auto_count,人工計數或自動計數,manual_tally

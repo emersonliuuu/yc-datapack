@@ -10,7 +10,8 @@
 - **區間**：`start_t_sec` 到 `end_t_sec` 是左閉右開區間 [start, end)。
 - **空值與零**：沒測到、不適用或畫面不可用時留空；`0` 代表有測，結果是零。
 - **計數是下限**：遮擋會造成低估，所有人數欄位代表「至少」。
-- **面積法**：影像只算座位區的面積比例，不跑骨架、不認臉、不追個人；分不出手或手機，一律稱「舉起來」。
+- **只有文字**：資料包只放 CSV 與 Markdown，不放影片、音檔、照片與 3D 模型；場景以文字描述，見 `scene/scene_description.md`。
+- **影像只數人**：台下的舉手、舉手機、坐著、站著、離席與回座都由 Insta360（X5）的 360 影片偵測；只輸出人數，不認臉、不保存也不輸出任何個人編號或軌跡；前後畫面的比對只用來判斷動作持續幾秒。
 - **個資**：不收觀眾的姓名、臉、聯絡方式與帳號；姓名只限同意公開的講者；問題與題目改寫時移除身分線索。
 - **不放判斷**：只放觀察值與照公開規則算出的結果；重點、金句等判斷放報告。
 - **參數**：定義中出現的參數名（例如 `polite_window_sec`）見文末參數表。
@@ -51,7 +52,8 @@
 | `notes/` | 現場筆記 | v1 | core | field_staff | 一場一份 | — |
 | `reactions/sound_events.csv` | 掌聲、笑聲、全場安靜 | v1 | core | pipeline | 一個聲音事件一列 | `event_id` |
 | `reactions/peaks.csv` | 反應高峰與高峰前三秒 | v1 | core | pipeline | 一個高峰一列 | `peak_id` |
-| `reactions/phone_raise.csv` | 舉起來（手或手機） | v1 | core | pipeline_reviewed | 一次舉起來事件一列 | `raise_id` |
+| `reactions/phone_raise.csv` | 舉手機 | v1 | core | pipeline_reviewed | 一次舉手機事件一列 | `raise_id` |
+| `reactions/hand_raise.csv` | 舉手 | v1 | core | pipeline_reviewed | 一次舉手事件一列 | `raise_id` |
 | `reactions/stage_polls.csv` | 講者在台上做的現場調查 | v1 | core | pipeline_reviewed | 一次調查一列 | `poll_id` |
 | `reactions/timeline_minute.csv` | 每分鐘總表 | v1 | core | pipeline | 一分鐘一列 | `minute_idx` |
 | `presence/presence_minute.csv` | 在座、離席與站著聽 | v1.1 | core | pipeline | 一台鏡頭一區一分鐘一列 | `minute_idx+camera+zone` |
@@ -74,9 +76,7 @@
 | `outside/entry_minute.csv` | 進場與出場人流 | v1.1 | bonus | pipeline | 一分鐘一列 | `minute_idx+camera` |
 | `outside/passersby_10min.csv` | 看了看板卻沒進場 | v1.1 | bonus | pipeline_reviewed | 十分鐘一列 | `window_start_clock+camera` |
 | `rankings/trivia.csv` | 冷知識排行榜 | v1.1 | bonus | office | 一則冷知識一列 | `trivia_id` |
-| `scene/photos/` | 舞台照片 | v1 | core | field_staff | 一張照片一檔 | — |
-| `scene/scene_notes.md` | 舞台場景筆記 | v1 | core | field_staff | — | — |
-| `scene/stage_splat.ply` | 舞台 3D 模型 | v1.1 | core | pipeline | — | — |
+| `scene/scene_description.md` | 場景描述 | v1 | core | field_staff | — | — |
 | `derivatives/works.csv` | 二創回灌 | v2 | core | office | 一件作品一列 | `work_id` |
 | `docs/field_reference.md` | 欄位說明 | v0.5 | core | pipeline | — | — |
 | `docs/devices_and_positions.md` | 設備與機位 | v0.5 | core | office | — | — |
@@ -152,7 +152,7 @@
 
 每一頁簡報的標題與我們寫的筆記；不放簡報畫面與全文。
 
-版本：v1　優先序：core　誰填：office　一列代表：一個簡報頁一列　主鍵：`slide_id`　來源設備：A;R
+版本：v1　優先序：core　誰填：office　一列代表：一個簡報頁一列　主鍵：`slide_id`　來源設備：A;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -171,7 +171,7 @@
 
 每一次換頁的時間與停留秒數；同一頁再次出現另起一列。
 
-版本：v1　優先序：core　誰填：pipeline　一列代表：一次換頁一列　主鍵：`change_seq`　來源設備：A;R
+版本：v1　優先序：core　誰填：pipeline　一列代表：一次換頁一列　主鍵：`change_seq`　來源設備：A;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -186,7 +186,7 @@
 | `dwell_sec` | number | 必填 | s |  | end_t_sec 減 start_t_sec | `62.3` |
 | `detect_method` | enum | 必填 |  | `manual` / `visual_diff` / `deck_match` | manual 人工標記；visual_diff 由投影畫面變化偵測；deck_match 與簡報檔逐頁比對 | `visual_diff` |
 | `confidence` | number | 必填 | 0–1 |  | 偵測信心；manual 填 1 | `0.97` |
-| `camera` | id | 必填 |  | `A` / `R` | 拍到這次換頁的設備代號；R 是備援 | `A` |
+| `camera` | id | 必填 |  | `A` / `X5` | 拍到這次換頁的設備代號；X5 是備援 | `A` |
 
 ## `content/segment_function.csv`：每段在做什麼
 
@@ -210,7 +210,7 @@
 | `char_count` | integer | 必填 | chars |  | 段落內所有句子 text 的字數：中文一字算 1，英文一個單字算 1，數字串算 1，不含標點與空白 | `186` |
 | `char_share` | number | 必填 | 0–1 |  | char_count 除以同一 segment_id 所有功能段落 char_count 的總和 | `0.083` |
 | `peak_count` | integer | 必填 |  |  | reactions/peaks.csv 中 peak_t_sec 落在本段起訖內的高峰數 | `1` |
-| `raised_ratio_max` | number | 可留空 | 0–1 |  | 本段期間 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空 | `0.12` |
+| `phone_count_max` | integer | 可留空 | people |  | 本段期間 reactions/phone_raise.csv 事件 phone_count_peak 的最大值；沒有事件填 0；沒有影像時留空 | `18` |
 
 ## `content/taiwan_mentions.csv`：講者提到台灣
 
@@ -252,15 +252,15 @@
 
 ## `reactions/sound_events.csv`：掌聲、笑聲、全場安靜
 
-每一段掌聲、笑聲或全場安靜的起訖時間與當下講到哪一句、哪一頁。
+每一段掌聲、笑聲、台下討論聲或全場安靜的起訖時間與當下講到哪一句、哪一頁。
 
-版本：v1　優先序：core　誰填：pipeline　一列代表：一個聲音事件一列　主鍵：`event_id`　來源設備：B;C
+版本：v1　優先序：core　誰填：pipeline　一列代表：一個聲音事件一列　主鍵：`event_id`　來源設備：B;C;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `event_id` | id | 必填 |  |  | SE 加五位數，依 start_t_sec 排序 | `SE00118` |
 | `event` | enum | 必填 |  | `applause` / `laughter` / `silence` / `chatter` | applause 掌聲；laughter 笑聲；silence 全場安靜：段落進行中講台與台下都沒有語音、掌聲與笑聲，且音量低於 silence_level_db 連續 silence_min_sec 以上；chatter 台下討論聲：台下多人同時說話、不是講台的語音 | `laughter` |
-| `mic` | id | 必填 |  | `B` / `C` / `A1` | 判定這個事件的收音設備代號；同一事件多支收到時填訊號最強的一支 | `B` |
+| `mic` | id | 必填 |  | `B` / `C` / `A1` / `X5` | 判定這個事件的收音設備代號；同一事件多支收到時填訊號最強的一支 | `B` |
 | `start_t_sec` | number | 必填 | s |  | 第一個分數超過 event_score_threshold 的分析窗起點 | `1544.0` |
 | `end_t_sec` | number | 必填 | s |  | 最後一個超過門檻的分析窗終點；間隔小於 event_merge_gap_sec 的同類事件合併 | `1547.8` |
 | `start_clock` | datetime | 必填 |  |  | start_t_sec 換算的台北時間 | `2026-11-12T12:25:44+08:00` |
@@ -277,13 +277,13 @@
 
 照固定規則算出的反應高峰排名與高峰前三秒講的話；不替人挑重點。
 
-版本：v1　優先序：core　誰填：pipeline　一列代表：一個高峰一列　主鍵：`peak_id`　來源設備：B;C;R;D1;D2
+版本：v1　優先序：core　誰填：pipeline　一列代表：一個高峰一列　主鍵：`peak_id`　來源設備：B;C;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `peak_id` | id | 必填 |  |  | PK 加三位數，依 start_t_sec 排序 | `PK021` |
 | `rank` | integer | 必填 |  |  | 依 score 由高到低排名，1 最高；同分以 start_t_sec 早者在前 | `3` |
-| `start_t_sec` | number | 必填 | s |  | 高峰窗起點：把非禮貌掌聲、笑聲事件與舉起來事件中，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗 | `1544.0` |
+| `start_t_sec` | number | 必填 | s |  | 高峰窗起點：把非禮貌掌聲、笑聲事件與舉手機事件中，重疊或間隔小於 peak_merge_gap_sec 者合併成一窗 | `1544.0` |
 | `end_t_sec` | number | 必填 | s |  | 高峰窗終點 | `1552.0` |
 | `peak_t_sec` | number | 必填 | s |  | 窗內各訊號正規化後加總最大的一秒 | `1546.0` |
 | `peak_clock` | datetime | 必填 |  |  | peak_t_sec 換算的台北時間 | `2026-11-12T12:25:46+08:00` |
@@ -294,38 +294,63 @@
 | `pre3s_sentence_ids` | id_list | 可留空 |  |  | 與 [start_t_sec−3; start_t_sec) 有重疊的句子代號，以 ; 分隔 | `T00042;T00043` |
 | `pre3s_text` | string | 可留空 |  |  | 上述句子的 text 依序以空格接起來 | `The best founders I know talk to users every week.` |
 | `pre3s_action` | string | 可留空 |  |  | 高峰前三秒講者做了什麼動作（換頁、停頓、手勢、走位、請台下回應），由設備 A 的影片或現場筆記人工記下；看不到留空 | `換到下一頁並停頓兩秒` |
-| `signals` | id_list | 必填 |  | `applause` / `laughter` / `raise` | 窗內出現的訊號，以 ; 分隔 | `laughter;raise` |
+| `signals` | id_list | 必填 |  | `applause` / `laughter` / `phone` | 窗內出現的訊號，以 ; 分隔 | `laughter;phone` |
 | `applause_sec` | number | 必填 | s |  | 窗內非禮貌掌聲的秒數 | `0` |
 | `laughter_sec` | number | 必填 | s |  | 窗內笑聲的秒數 | `3.8` |
-| `raised_ratio_max` | number | 可留空 | 0–1 |  | 窗內 reactions/phone_raise.csv 事件的 raised_ratio_peak 最大值；沒有影像時留空 | `0.14` |
-| `score` | number | 必填 |  |  | w_applause×applause_sec + w_laughter×laughter_sec + w_raise×raised_ratio_max×60；權重見 schema/parameters.csv；窗內任一句 is_sensitive 為 true 的高峰不收錄 | `12.2` |
+| `phone_count_max` | integer | 可留空 | people |  | 窗內 reactions/phone_raise.csv 事件 phone_count_peak 的最大值；沒有舉手機事件填 0；沒有影像時留空 | `18` |
+| `score` | number | 必填 |  |  | w_applause×applause_sec + w_laughter×laughter_sec + w_phone×phone_count_max；權重見 schema/parameters.csv；窗內任一句 is_sensitive 為 true 的高峰不收錄 | `12.2` |
 
-## `reactions/phone_raise.csv`：舉起來（手或手機）
+## `reactions/phone_raise.csv`：舉手機
 
-座位區面積法：頭頂線以上短暫被蓋住的面積比例連續超過門檻的時段；分不出手或手機，一律稱「舉起來」。
+同時舉手機（拍照、錄影）的人數達到門檻的時段，以及最多幾人、占可見人數多少。
 
-版本：v1　優先序：core　誰填：pipeline_reviewed　一列代表：一次舉起來事件一列　主鍵：`raise_id`　來源設備：R;D1;D2
+版本：v1　優先序：core　誰填：pipeline_reviewed　一列代表：一次舉手機事件一列　主鍵：`raise_id`　來源設備：X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `raise_id` | id | 必填 |  |  | RS 加五位數，依 start_t_sec 排序 | `RS00012` |
-| `start_t_sec` | number | 必填 | s |  | 事件起點：每秒的區面積加權 raised_ratio 第一次達到 raise_event_threshold 的秒。各區 raised_ratio 是該區頭頂線以上判定區中，相對座位基準畫面出現變化、且持續不超過 raise_max_sec 秒的面積比例；加權是依各區在畫面中的座位面積 | `1544` |
-| `end_t_sec` | number | 必填 | s |  | 事件終點：加權 raised_ratio 回到門檻以下的秒；間隔小於 event_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄 | `1551` |
+| `raise_id` | id | 必填 |  |  | PH 加五位數，依 start_t_sec 排序 | `PH00012` |
+| `start_t_sec` | number | 必填 | s |  | 事件起點：同一秒舉手機的人數第一次達到 raise_event_min_people 的秒。舉手機：畫面中偵測到手機、手機高於持有者的肩膀、且持續 phone_up_min_sec 秒以上；拍照、錄影與舉起手機看都算 | `1544` |
+| `end_t_sec` | number | 必填 | s |  | 事件終點：舉手機人數回到 raise_event_min_people 以下的秒；間隔小於 raise_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄 | `1551` |
 | `start_clock` | datetime | 必填 |  |  | start_t_sec 換算的台北時間 | `2026-11-12T12:25:44+08:00` |
 | `duration_sec` | number | 必填 | s |  | end_t_sec 減 start_t_sec | `7` |
-| `peak_t_sec` | number | 必填 | s |  | 事件內加權 raised_ratio 最大的秒 | `1546` |
+| `peak_t_sec` | number | 必填 | s |  | 事件內同一秒舉手機人數最多的秒；同數取最早 | `1546` |
 | `segment_id` | id | 必填 |  |  | peak_t_sec 所屬的段落 | `S03` |
 | `slide_id` | id | 可留空 |  |  | peak_t_sec 當下投影幕上的頁 | `S03-P011` |
 | `sentence_id` | id | 可留空 |  |  | peak_t_sec 當下正在說或最近一句已說完的句子 | `T00043` |
-| `raised_ratio_peak` | number | 必填 | 0–1 |  | 事件內加權 raised_ratio 的最大值；是面積比例，不是人數，分不出手或手機 | `0.14` |
-| `raised_ratio_mean` | number | 必填 | 0–1 |  | 事件內加權 raised_ratio 的平均 | `0.09` |
-| `coverage` | string | 必填 |  |  | 參與計算的鏡頭與區，格式 camera:zone;zone；畫面不可用的區不列入 | `R:Z1;Z2` |
+| `phone_count_peak` | integer | 必填 | people |  | 估計人數：peak_t_sec 那一秒舉手機的人數；被擋住的人數不到，是下限 | `18` |
+| `visible_count` | integer | 必填 | people |  | peak_t_sec 那一秒 coverage_zones 內偵測到的人數 | `212` |
+| `phone_share_peak` | number | 必填 | 0–1 |  | 占可見人數比例：phone_count_peak 除以 visible_count | `0.085` |
+| `camera` | id | 必填 |  | `X5` | 偵測用的設備代號 | `X5` |
+| `coverage_zones` | id_list | 必填 |  |  | peak_t_sec 當下畫面可用、有算進來的座位區代號，以 ; 分隔；代號見 docs/venue_map.md | `Z1;Z2;Z3` |
+
+## `reactions/hand_raise.csv`：舉手
+
+同時舉手的人數達到門檻的時段，以及最多幾人、占可見人數多少；舉著手機的不算。
+
+版本：v1　優先序：core　誰填：pipeline_reviewed　一列代表：一次舉手事件一列　主鍵：`raise_id`　來源設備：X5
+
+| 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `raise_id` | id | 必填 |  |  | HR 加五位數，依 start_t_sec 排序 | `HR00004` |
+| `start_t_sec` | number | 必填 | s |  | 事件起點：同一秒舉手的人數第一次達到 raise_event_min_people 的秒。舉手：手腕高於頭頂、持續 hand_raise_min_sec 秒以上；手上拿著手機的算舉手機，不算舉手 | `1544` |
+| `end_t_sec` | number | 必填 | s |  | 事件終點：舉手人數回到 raise_event_min_people 以下的秒；間隔小於 raise_merge_gap_sec 的事件合併，短於 raise_event_min_sec 的不收錄 | `1551` |
+| `start_clock` | datetime | 必填 |  |  | start_t_sec 換算的台北時間 | `2026-11-12T12:25:44+08:00` |
+| `duration_sec` | number | 必填 | s |  | end_t_sec 減 start_t_sec | `7` |
+| `peak_t_sec` | number | 必填 | s |  | 事件內同一秒舉手人數最多的秒；同數取最早 | `1546` |
+| `segment_id` | id | 必填 |  |  | peak_t_sec 所屬的段落 | `S03` |
+| `slide_id` | id | 可留空 |  |  | peak_t_sec 當下投影幕上的頁 | `S03-P011` |
+| `sentence_id` | id | 可留空 |  |  | peak_t_sec 當下正在說或最近一句已說完的句子 | `T00043` |
+| `hand_count_peak` | integer | 必填 | people |  | 估計人數：peak_t_sec 那一秒舉手的人數；被擋住的人數不到，是下限 | `64` |
+| `visible_count` | integer | 必填 | people |  | peak_t_sec 那一秒 coverage_zones 內偵測到的人數 | `205` |
+| `hand_share_peak` | number | 必填 | 0–1 |  | 占可見人數比例：hand_count_peak 除以 visible_count | `0.312` |
+| `camera` | id | 必填 |  | `X5` | 偵測用的設備代號 | `X5` |
+| `coverage_zones` | id_list | 必填 |  |  | peak_t_sec 當下畫面可用、有算進來的座位區代號，以 ; 分隔；代號見 docs/venue_map.md | `Z1;Z2;Z3` |
 
 ## `reactions/stage_polls.csv`：講者在台上做的現場調查
 
-講者請台下舉手或回應的時刻，以及當下舉起來的面積比例。
+講者請台下舉手或回應的時刻，以及當下舉手的人數。
 
-版本：v1　優先序：core　誰填：pipeline_reviewed　一列代表：一次調查一列　主鍵：`poll_id`　來源設備：B;R;D1;D2
+版本：v1　優先序：core　誰填：pipeline_reviewed　一列代表：一次調查一列　主鍵：`poll_id`　來源設備：B;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -338,15 +363,18 @@
 | `clock` | datetime | 必填 |  |  | t_sec 換算的台北時間 | `2026-11-12T12:36:50+08:00` |
 | `response_type` | enum | 必填 |  | `raise_hand` / `applause` / `shout` / `other` | 講者要求的回應方式 | `raise_hand` |
 | `window_sec` | number | 必填 | s |  | 計算回應的時間窗長度，等於 stage_poll_window_sec | `8` |
-| `raised_ratio_peak` | number | 條件必填（條件寫在定義中） | 0–1 |  | 回應窗內每秒的區面積加權 raised_ratio（計法同 reactions/phone_raise.csv）的最大值；只是在場組成的代理指標，不是人數比例；response_type 不是 raise_hand 時留空 | `0.31` |
-| `coverage` | string | 必填 |  |  | 參與計算的鏡頭與區，格式 camera:zone;zone | `R:Z1;Z2` |
+| `hand_count_peak` | integer | 條件必填（條件寫在定義中） | people |  | 回應窗內同一秒舉手人數的最大值（舉手定義同 reactions/hand_raise.csv）；response_type 不是 raise_hand 時留空 | `64` |
+| `visible_count` | integer | 條件必填（條件寫在定義中） | people |  | hand_count_peak 那一秒 coverage_zones 內偵測到的人數 | `205` |
+| `hand_share_peak` | number | 條件必填（條件寫在定義中） | 0–1 |  | hand_count_peak 除以 visible_count；只代表看得到的座位區 | `0.312` |
+| `camera` | id | 必填 |  | `X5` | 偵測用的設備代號 | `X5` |
+| `coverage_zones` | id_list | 必填 |  |  | 畫面可用、有算進來的座位區代號，以 ; 分隔 | `Z1;Z2;Z3` |
 | `note` | string | 可留空 |  |  | 其他說明 |  |
 
 ## `reactions/timeline_minute.csv`：每分鐘總表
 
-每分鐘彙整講者、簡報、聲音與座位區變化，給 AI 一次讀完。
+每分鐘彙整講者、簡報、聲音、舉手機與在座人數，給 AI 一次讀完。
 
-版本：v1　優先序：core　誰填：pipeline　一列代表：一分鐘一列　主鍵：`minute_idx`　來源設備：B;C;A;R;D1;D2
+版本：v1　優先序：core　誰填：pipeline　一列代表：一分鐘一列　主鍵：`minute_idx`　來源設備：B;C;A;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -364,46 +392,47 @@
 | `polite_applause_sec` | number | 必填 | s |  | 與這一分鐘重疊的禮貌掌聲秒數 | `0` |
 | `laughter_sec` | number | 必填 | s |  | 與這一分鐘重疊的笑聲秒數 | `3.8` |
 | `silence_sec` | number | 必填 | s |  | 與這一分鐘重疊的全場安靜秒數 | `0` |
-| `raised_ratio_max` | number | 可留空 | 0–1 |  | 與這一分鐘重疊的 reactions/phone_raise.csv 事件 raised_ratio_peak 最大值；沒有事件填 0；沒有影像時留空 | `0.14` |
-| `occupied_ratio` | number | 可留空 | 0–1 |  | presence/presence_minute.csv 各區 occupied_ratio 依區面積加權的平均 | `0.86` |
-| `standing_ratio` | number | 可留空 | 0–1 |  | presence/presence_minute.csv 各區 standing_ratio 依區面積加權的平均 | `0.02` |
-| `door_in` | integer | 可留空 |  |  | presence/presence_minute.csv 各區 door_in 加總 | `3` |
-| `door_out` | integer | 可留空 |  |  | presence/presence_minute.csv 各區 door_out 加總 | `1` |
+| `phone_count_max` | integer | 可留空 | people |  | 與這一分鐘重疊的 reactions/phone_raise.csv 事件 phone_count_peak 最大值；沒有事件填 0；沒有影像時留空 | `18` |
+| `hand_count_max` | integer | 可留空 | people |  | 與這一分鐘重疊的 reactions/hand_raise.csv 事件 hand_count_peak 最大值；沒有事件填 0；沒有影像時留空 | `0` |
+| `visible_count` | integer | 可留空 | people |  | 可見人數：presence/presence_minute.csv 這一分鐘各區 visible_count 加總 | `212` |
+| `standing_count` | integer | 可留空 | people |  | 站立人數：presence/presence_minute.csv 這一分鐘各區 standing_count 加總 | `4` |
+| `left_count` | integer | 可留空 | people |  | 離席：presence/presence_minute.csv 這一分鐘各區 left_count 加總 | `3` |
+| `returned_count` | integer | 可留空 | people |  | 回座：presence/presence_minute.csv 這一分鐘各區 returned_count 加總 | `1` |
 | `peak_ids` | id_list | 可留空 |  |  | peak_t_sec 落在這一分鐘的高峰，以 ; 分隔 | `PK021` |
 
 ## `presence/presence_minute.csv`：在座、離席與站著聽
 
-座位區面積法：座位被佔住的比例、站著聽的比例、走道與門口的移動。
+每區每分鐘的可見人數、坐著與站著的人數、離席與回座。
 
-版本：v1.1　優先序：core　誰填：pipeline　一列代表：一台鏡頭一區一分鐘一列　主鍵：`minute_idx+camera+zone`　來源設備：R;D1;D2
+版本：v1.1　優先序：core　誰填：pipeline　一列代表：一台鏡頭一區一分鐘一列　主鍵：`minute_idx+camera+zone`　來源設備：X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `minute_idx` | integer | 必填 |  |  | 從 T0 起第幾分鐘，T0 以前為負數 | `25` |
 | `start_t_sec` | number | 必填 | s |  | 這一分鐘的起點 | `1500` |
 | `start_clock` | datetime | 必填 |  |  | start_t_sec 換算的台北時間 | `2026-11-12T12:25:00+08:00` |
-| `camera` | id | 必填 |  | `R` / `D1` / `D2` | 拍攝座位區的設備代號 | `R` |
+| `camera` | id | 必填 |  | `X5` | 拍攝座位區的設備代號 | `X5` |
 | `zone` | id | 必填 |  |  | 座位區代號，範圍畫在 docs/venue_map.md | `Z2` |
-| `occupied_ratio` | number | 條件必填（條件寫在定義中） | 0–1 |  | 頭頂線以下的座位判定區中，與入場前最空的基準畫面相比被佔住的面積比例；取這一分鐘 valid 秒數的中位數；valid_sec 為 0 時留空 | `0.86` |
-| `standing_ratio` | number | 條件必填（條件寫在定義中） | 0–1 |  | 頭頂線以上判定區中，連續被佔住 stand_min_sec 秒以上的面積比例；取這一分鐘的中位數 | `0.02` |
-| `aisle_motion` | number | 可留空 | 0–1 |  | 走道區有移動的秒數佔 valid 秒數的比例；畫面沒涵蓋走道時留空 | `0.15` |
-| `door_in` | integer | 可留空 |  |  | 門口區往內移動的區塊數，是人數的下限；畫面沒涵蓋門口時留空 | `3` |
-| `door_out` | integer | 可留空 |  |  | 門口區往外移動的區塊數，是人數的下限；畫面沒涵蓋門口時留空 | `1` |
-| `valid_sec` | integer | 必填 | s |  | 這一分鐘內 valid 為 true 的秒數（0–60） | `60` |
+| `visible_count` | integer | 條件必填（條件寫在定義中） | people |  | 可見人數：這一分鐘每秒在這一區偵測到的人數，取 valid 秒數的中位數；valid_sec 為 0 時留空 | `71` |
+| `seated_count` | integer | 條件必填（條件寫在定義中） | people |  | 坐著的人數：visible_count 中判定為坐姿的人數，取中位數 | `68` |
+| `standing_count` | integer | 條件必填（條件寫在定義中） | people |  | 站立人數：在這一區站著、且同一位置持續站立 stand_min_sec 秒以上的人數，取中位數；走動中的人不算 | `3` |
+| `left_count` | integer | 條件必填（條件寫在定義中） | people |  | 離席：這一分鐘內從這一區座位起身、走出這一區的人數 | `2` |
+| `returned_count` | integer | 條件必填（條件寫在定義中） | people |  | 回座：這一分鐘內從區外走進這一區並坐下的人數 | `1` |
+| `valid_sec` | integer | 必填 | s |  | 這一分鐘內這一區畫面可用的秒數（0–60）；被遮住、鏡頭移動或過暗的秒不算 | `60` |
 
 ## `presence/fill_order.csv`：各區坐滿順序
 
 前、中、後三區分別在什麼時候坐到五成與八成。
 
-版本：v1.1　優先序：reduced　誰填：pipeline　一列代表：一個區域群組一列　主鍵：`zone_group`　來源設備：R;D1;D2
+版本：v1.1　優先序：reduced　誰填：pipeline　一列代表：一個區域群組一列　主鍵：`zone_group`　來源設備：X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `zone_group` | enum | 必填 |  | `front` / `middle` / `back` | 座位區群組；各 zone 屬於哪一群寫在 docs/venue_map.md | `front` |
-| `camera` | id | 必填 |  | `R` / `D1` / `D2` | 計算用的設備代號 | `D1` |
-| `max_occupied_ratio` | number | 必填 | 0–1 |  | 這一群全場 occupied_ratio（分鐘值）的最大值 | `0.97` |
-| `fill_50_t_sec` | number | 可留空 | s |  | occupied_ratio 第一次達到 max_occupied_ratio 的 50% 的分鐘起點；入場前畫面拍不到時留空 | `-1200` |
-| `fill_80_t_sec` | number | 可留空 | s |  | occupied_ratio 第一次達到 max_occupied_ratio 的 80% 的分鐘起點 | `-600` |
+| `camera` | id | 必填 |  | `X5` | 計算用的設備代號 | `X5` |
+| `max_seated_count` | integer | 必填 | people |  | 這一群各區 seated_count 加總後（分鐘值）的全場最大值 | `96` |
+| `fill_50_t_sec` | number | 可留空 | s |  | 這一群 seated_count 加總第一次達到 max_seated_count 50% 的分鐘起點；入場前畫面拍不到時留空 | `-1200` |
+| `fill_80_t_sec` | number | 可留空 | s |  | 這一群 seated_count 加總第一次達到 max_seated_count 80% 的分鐘起點 | `-600` |
 | `fill_50_clock` | datetime | 可留空 |  |  | fill_50_t_sec 換算的台北時間 | `2026-11-12T11:40:00+08:00` |
 | `fill_80_clock` | datetime | 可留空 |  |  | fill_80_t_sec 換算的台北時間 | `2026-11-12T11:50:00+08:00` |
 | `fill_rank` | integer | 必填 |  | `1` / `2` / `3` | 依 fill_80_t_sec 先後排名；未達八成的排在最後 | `1` |
@@ -688,13 +717,13 @@
 
 每分鐘走進與走出會場的人數。
 
-版本：v1.1　優先序：bonus　誰填：pipeline　一列代表：一分鐘一列　主鍵：`minute_idx+camera`　來源設備：H;D1;D2
+版本：v1.1　優先序：bonus　誰填：pipeline　一列代表：一分鐘一列　主鍵：`minute_idx+camera`　來源設備：H;X5
 
 | 欄位 | 型別 | 必填 | 單位 | 允許值 | 定義 | 範例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `minute_idx` | integer | 必填 |  |  | 從 T0 起第幾分鐘，T0 以前為負數 | `-30` |
 | `start_clock` | datetime | 必填 |  |  | 這一分鐘的起點 | `2026-11-12T11:30:00+08:00` |
-| `camera` | id | 必填 |  | `H` / `D1` / `D2` | 計數用的設備代號 | `H` |
+| `camera` | id | 必填 |  | `H` / `X5` | 計數用的設備代號 | `H` |
 | `entering` | integer | 必填 | people |  | 這一分鐘越過門口線往內的人數 | `18` |
 | `exiting` | integer | 必填 | people |  | 這一分鐘越過門口線往外的人數 | `0` |
 | `method` | enum | 必填 |  | `manual_tally` / `auto_count` | 人工計數或自動計數 | `manual_tally` |
@@ -763,25 +792,31 @@
 | 參數 | 值 | 單位 | 用在 | 定義 | 狀態 |
 | --- | --- | --- | --- | --- | --- |
 | `t0` | opening_applause_onset |  | `all` | T0（t_sec = 0）：開場第一段掌聲在主收音設備上的起點；所有裝置以這個聲音事件對時 | fixed |
+| `slide_change_diff_threshold` | TBD | 0–1 | `content/slide_changes.csv` | 投影畫面前後差異達到這個值才算換頁（detect_method 為 visual_diff 時） | to_test |
 | `event_score_threshold` | TBD | 0–1 | `reactions/sound_events.csv` | 分析窗的類別分數達到這個值才算該類別 | to_test |
 | `event_merge_gap_sec` | TBD | s | `reactions/sound_events.csv` | 同類事件間隔小於這個秒數就合併 | to_test |
 | `event_min_sec` | TBD | s | `reactions/sound_events.csv` | 事件長度短於這個秒數不收錄 | to_test |
 | `silence_level_db` | TBD | dBFS | `reactions/sound_events.csv` | 全場安靜的音量上限 | to_test |
 | `silence_min_sec` | TBD | s | `reactions/sound_events.csv` | 全場安靜至少持續的秒數 | to_test |
 | `polite_window_sec` | TBD | s | `reactions/sound_events.csv` | 段落開始或結束前後這個秒數內的掌聲視為禮貌性掌聲 | to_test |
-| `raise_max_sec` | TBD | s | `reactions/phone_raise.csv` | 頭頂線以上的變化持續不超過這個秒數才算「舉起來」 | to_test |
-| `stand_min_sec` | TBD | s | `presence/presence_minute.csv` | 頭頂線以上的變化持續達到這個秒數才算「站著聽」 | to_test |
-| `raise_event_threshold` | TBD | 0–1 | `reactions/phone_raise.csv` | 區面積加權 raised_ratio 達到這個值才算進入舉起來事件 | to_test |
-| `raise_event_min_sec` | TBD | s | `reactions/phone_raise.csv` | 舉起來事件短於這個秒數不收錄 | to_test |
+| `analysis_fps` | TBD | fps | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | Insta360 影片拿來偵測的每秒張數 | to_decide |
+| `person_conf_min` | TBD | 0–1 | `reactions/phone_raise.csv;reactions/hand_raise.csv;presence/presence_minute.csv` | 人的偵測信心達到這個值才算一個人 | to_test |
+| `phone_conf_min` | TBD | 0–1 | `reactions/phone_raise.csv` | 手機的偵測信心達到這個值才算有手機 | to_test |
+| `phone_up_min_sec` | TBD | s | `reactions/phone_raise.csv` | 手機高於肩膀持續達到這個秒數才算「舉手機」 | to_test |
+| `hand_raise_min_sec` | TBD | s | `reactions/hand_raise.csv;reactions/stage_polls.csv` | 手腕高於頭頂持續達到這個秒數才算「舉手」 | to_test |
+| `stand_min_sec` | TBD | s | `presence/presence_minute.csv` | 同一位置持續站立達到這個秒數才算「站著聽」；短於這個秒數視為起身走動 | to_test |
+| `raise_event_min_people` | TBD | people | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 同一秒舉手機或舉手的人數達到這個值才算進入事件 | to_test |
+| `raise_event_min_sec` | TBD | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件短於這個秒數不收錄 | to_test |
+| `raise_merge_gap_sec` | TBD | s | `reactions/phone_raise.csv;reactions/hand_raise.csv` | 舉手機或舉手事件間隔小於這個秒數就合併 | to_test |
 | `peak_merge_gap_sec` | TBD | s | `reactions/peaks.csv` | 高峰候選間隔小於這個秒數就合併成同一窗 | to_test |
 | `pre_peak_window_sec` | 3 | s | `reactions/peaks.csv` | 高峰前要看的秒數（Franck 定為三秒） | fixed |
 | `w_applause` | TBD |  | `reactions/peaks.csv` | score 中掌聲秒數的權重 | to_decide |
 | `w_laughter` | TBD |  | `reactions/peaks.csv` | score 中笑聲秒數的權重 | to_decide |
-| `w_raise` | TBD |  | `reactions/peaks.csv` | score 中舉起來面積比例的權重 | to_decide |
+| `w_phone` | TBD |  | `reactions/peaks.csv` | score 中舉手機人數的權重 | to_decide |
 | `stage_poll_window_sec` | TBD | s | `reactions/stage_polls.csv` | 講者提出調查後計算回應的秒數 | to_test |
 | `fill_thresholds` | 0.5;0.8 | ratio | `presence/fill_order.csv` | 坐滿順序的兩個門檻（最大值的五成與八成） | fixed |
 | `crowd_radius_m` | TBD | m | `after_talk/crowd_after_talk.csv` | 講者周圍幾公尺內算「圍住」 | to_decide |
 | `crowd_min_people` | TBD | people | `after_talk/crowd_after_talk.csv` | 圈內少於這個人數持續 30 秒就算結束 | to_decide |
 | `stop_min_sec` | TBD | s | `outside/passersby_10min.csv` | 在看板前停留至少這個秒數才算「停下」 | to_decide |
-| `bathroom_min_minutes` | 5 | min | `rankings/trivia.csv` | 廁所時段：離開後回座的最短分鐘數 | fixed |
-| `bathroom_max_minutes` | 15 | min | `rankings/trivia.csv` | 廁所時段：離開後回座的最長分鐘數 | fixed |
+| `bathroom_min_minutes` | 5 | min | `rankings/trivia.csv` | 廁所時段：同一區離席後出現回座的最短分鐘數；以區為單位看 left_count 與 returned_count，不追個人 | fixed |
+| `bathroom_max_minutes` | 15 | min | `rankings/trivia.csv` | 廁所時段：同一區離席後出現回座的最長分鐘數；以區為單位看 left_count 與 returned_count，不追個人 | fixed |

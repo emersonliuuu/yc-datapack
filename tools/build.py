@@ -63,6 +63,11 @@ def check(files, by_file):
     for f in files:
         if f["format"] == "csv" and f["path"] not in by_file:
             errors.append(f"{f['path']} 是 CSV，但 fields.csv 沒有欄位")
+    for f in files:
+        if f["format"] not in ("csv", "md", "dir"):
+            errors.append(f"{f['path']} 不是文字檔（format = {f['format']}）；資料包只放 CSV 與 Markdown")
+        if f["format"] == "dir" and f["path"] != "notes/":
+            errors.append(f"{f['path']} 是資料夾；目前只有 notes/ 可以是資料夾（內含 Markdown）")
     allowed_meta = {c["column"]: c["allowed_values"].split("|") for c in by_file.get("manifest.csv", []) if c["column"] in ("filled_by", "priority")}
     for f in files:
         for key, vals in allowed_meta.items():
@@ -150,7 +155,8 @@ def write_reference(files, by_file, params):
     lines.append("- **區間**：`start_t_sec` 到 `end_t_sec` 是左閉右開區間 [start, end)。")
     lines.append("- **空值與零**：沒測到、不適用或畫面不可用時留空；`0` 代表有測，結果是零。")
     lines.append("- **計數是下限**：遮擋會造成低估，所有人數欄位代表「至少」。")
-    lines.append("- **面積法**：影像只算座位區的面積比例，不跑骨架、不認臉、不追個人；分不出手或手機，一律稱「舉起來」。")
+    lines.append("- **只有文字**：資料包只放 CSV 與 Markdown，不放影片、音檔、照片與 3D 模型；場景以文字描述，見 `scene/scene_description.md`。")
+    lines.append("- **影像只數人**：台下的舉手、舉手機、坐著、站著、離席與回座都由 Insta360（X5）的 360 影片偵測；只輸出人數，不認臉、不保存也不輸出任何個人編號或軌跡；前後畫面的比對只用來判斷動作持續幾秒。")
     lines.append("- **個資**：不收觀眾的姓名、臉、聯絡方式與帳號；姓名只限同意公開的講者；問題與題目改寫時移除身分線索。")
     lines.append("- **不放判斷**：只放觀察值與照公開規則算出的結果；重點、金句等判斷放報告。")
     lines.append("- **參數**：定義中出現的參數名（例如 `polite_window_sec`）見文末參數表。")

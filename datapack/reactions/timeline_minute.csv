@@ -1,1 +1,1 @@
-minute_idx,start_t_sec,start_clock,segment_id,speaker_id,slide_ids,page_title,transcript_text,sentence_count,char_count,applause_sec,polite_applause_sec,laughter_sec,silence_sec,raised_ratio_max,occupied_ratio,standing_ratio,door_in,door_out,peak_ids
+minute_idx,start_t_sec,start_clock,segment_id,speaker_id,slide_ids,page_title,transcript_text,sentence_count,char_count,applause_sec,polite_applause_sec,laughter_sec,silence_sec,phone_count_max,hand_count_max,visible_count,standing_count,left_count,returned_count,peak_ids

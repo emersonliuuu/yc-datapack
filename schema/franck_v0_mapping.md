@@ -14,8 +14,10 @@
 | `reactions/laugh_spread.csv` | — | 收集項目 database 已移除；笑聲在 `reactions/sound_events.csv` |
 | `online/hashtag_minute.csv` | — | 收集項目 database 已移除 |
 | `online/youbike_parking.csv` | — | 收集項目 database 已移除 |
-| — | `content/segment_function.csv`、`reactions/stage_polls.csv`、`notes/`、`scene/`、`social/`、`side_events/luma.csv`、`speakers/news.csv`、`speakers/public_projects.md`、`questions/remembered_moments.csv` | v0 之後收集項目 database 新增 |
+| — | `reactions/hand_raise.csv`、`content/segment_function.csv`、`reactions/stage_polls.csv`、`notes/`、`scene/`、`social/`、`side_events/luma.csv`、`speakers/news.csv`、`speakers/public_projects.md`、`questions/remembered_moments.csv` | v0 之後收集項目 database 新增 |
 | 中文檔名（`00_先看這個.md` 等） | 英文檔名 | 對照見 `README.md` |
+| `scene/photos/`、3D 模型 | `scene/scene_description.md` | 資料包只放文字，場景改用文字描述 |
+| `docs/場地平面圖`（圖） | `docs/venue_map.md`（文字） | 同上 |
 | UTF-8 含 BOM | UTF-8 不含 BOM | 待確認：Excel 直接開中文會亂碼時再改回 BOM |
 
 ## 欄位層級
@@ -38,22 +40,22 @@
 | | 強度 | `score_max`、`level_db_max` | 分成模型分數與音量峰值 |
 | | 收音點 | `mic` | |
 | | 對到頁次、對到哪一句 | `slide_id`、`sentence_id` | |
-| `reactions/phone_raise.csv` | 開始、結束、對到頁次 | `start_t_sec`、`end_t_sec`、`slide_id` | 改為一次事件一列 |
-| | 估計人數 | — | 面積法不數人，見 `docs/limitations.md` |
-| | 占可見人數比例 | `raised_ratio_peak`、`raised_ratio_mean` | 是面積比例，不是人數比例 |
+| `reactions/phone_raise.csv` | 開始、結束、對到頁次 | `start_t_sec`、`end_t_sec`、`slide_id` | 一次舉手機事件一列 |
+| | 估計人數 | `phone_count_peak` | |
+| | 占可見人數比例 | `phone_share_peak`、`visible_count` | |
 | `reactions/peaks.csv` | 名次、時間、頁次、講者 | `rank`、`peak_t_sec`、`slide_id`、`speaker_id` | |
 | | 反應類型、強度 | `signals`、`score` | |
 | | 高峰前三秒講者做了什麼 | `pre3s_text`、`pre3s_action` | 分成說的話與動作 |
 | `reactions/timeline_minute.csv` | 分鐘、段落、講者、頁次 | `minute_idx`、`segment_id`、`speaker_id`、`slide_ids` | |
 | | 逐字稿摘要 | `transcript_text` | 不摘要，放這一分鐘的原句 |
 | | 掌聲秒數、笑聲秒數 | `applause_sec`、`laughter_sec` | |
-| | 舉手機估計 | `raised_ratio_max` | |
-| | 可見人數、站立人數 | `occupied_ratio`、`standing_ratio` | 面積法改為比例 |
-| | 離席、回座 | `door_out`、`door_in` | 以門口線的進出代替 |
+| | 舉手機估計 | `phone_count_max` | 另加舉手 `hand_count_max` |
+| | 可見人數、站立人數 | `visible_count`、`standing_count` | |
+| | 離席、回座 | `left_count`、`returned_count` | |
 | `presence/presence_minute.csv` | 分鐘、區 | `minute_idx`、`zone` | |
-| | 可見人數、站立人數 | `occupied_ratio`、`standing_ratio` | 面積法改為比例 |
-| | 離席、回座 | `door_out`、`door_in` | |
-| `presence/fill_order.csv` | 時間、區、大約坐滿幾成 | `fill_50_t_sec`、`fill_80_t_sec`、`zone_group`、`max_occupied_ratio` | 改為一區一列，記到五成與八成的時間 |
+| | 可見人數、站立人數 | `visible_count`、`standing_count` | 另加坐著的人數 `seated_count` |
+| | 離席、回座 | `left_count`、`returned_count` | |
+| `presence/fill_order.csv` | 時間、區、大約坐滿幾成 | `fill_50_t_sec`、`fill_80_t_sec`、`zone_group`、`max_seated_count` | 改為一區一列，記坐到最多人數五成與八成的時間 |
 | `after_talk/crowd_after_talk.csv` | 講者、下台時間 | `speaker_id`、`stage_exit_t_sec` | |
 | | 圍住開始、圍住結束、最多幾人 | `start_t_sec`、`end_t_sec`、`peak_crowd` | |
 | | 說到話的人數、等了又走的人數 | `talked_count`、`left_without_talking` | |
@@ -83,8 +85,8 @@
 
 ## 刻意不同的地方
 
-這幾處和 v0 不同，原因是收集項目 database 之後改用座位區面積法，要和 Franck 確認：
-
-1. **不數人**：`phone_raise`、`presence_minute`、`timeline_minute`、`fill_order` 的人數改成面積比例；只有 `crowd_after_talk`（人工）與 `outside/*` 還是人數。
-2. **舉起來改為事件**：v0 的 `phone_raise` 沒寫一列代表什麼，這版定為「一次舉起來事件一列」，起訖由門檻 `raise_event_threshold` 決定。
-3. **逐字稿摘要改放原句**：`timeline_minute.transcript_text` 放這一分鐘的原句，不摘要，符合「不放判斷」。
+1. **台下影像只用 X5**：v0 的 R、D 改由一台 Insta360 X5 的 360 影片偵測舉手、舉手機、坐著、站著、離席與回座；X5 的收音也加進 `reactions/sound_events.csv` 的 `mic`。
+2. **舉手與舉手機分開**：v0 只有 `phone_raise`；X5 偵測得出手與手機，另加 `reactions/hand_raise.csv`，舉著手機的只算舉手機。
+3. **舉手機改為事件**：v0 的 `phone_raise` 沒寫一列代表什麼，這版定為「一次舉手機事件一列」，起訖由 `raise_event_min_people` 等參數決定。
+4. **只有文字**：舞台照片、3D 模型與平面圖檔不進資料包，改成 `scene/scene_description.md` 與 `docs/venue_map.md` 的文字描述。
+5. **逐字稿摘要改放原句**：`timeline_minute.transcript_text` 放這一分鐘的原句，不摘要，符合「不放判斷」。
